@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { render } from 'react-dom';
 import './index.css';
 import App from './components/App.js';
-import { Router, Route, IndexRoute, BrowserRouter} from 'react-router-dom'
+import { Router, Route, IndexRoute, BrowserRouter, Switch} from 'react-router-dom'
 import * as serviceWorker from './serviceWorker';
 import NewItem from './components/NewItem.js';
 
@@ -11,7 +11,10 @@ import NewItem from './components/NewItem.js';
 
 render((
   <BrowserRouter>
-    <App />
+      <Switch>
+        <Route exact path='/' component={App}/>
+        <Route path='/newitem' component={NewItem}/>
+      </Switch>
   </BrowserRouter>
 ), document.getElementById('root'));
 

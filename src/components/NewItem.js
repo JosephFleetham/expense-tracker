@@ -10,24 +10,17 @@ class NewItem extends Component {
         type: '',
         note: '',
         price: 0,
-        item: [
-          {
-            id:'',
-            expense: true,
-            type:'',
-            note:'',
-            date:'',
-            price: 0,
-          }
-        ]
+        newItem: []
       };
       this.toggleSubtraction = this.toggleSubtraction.bind(this);
       this.toggleAddition = this.toggleAddition.bind(this);
+      this.handleSubmit = this.handleSubmit.bind(this);
   }
   componentWillMount () {
     this.setState({
       total: this.props.location.state.total
     })
+
   }
   toggleAddition () {
     if (this.state.additionSelected === false) {
@@ -63,8 +56,39 @@ class NewItem extends Component {
     })
     console.log(this.state.type);
   }
-  submit () {
-
+  handleSubmit (evt) {
+    var date = new Date();
+    const newItem = this.state.newItem;
+    newItem.push(
+      {
+        "id": 1,
+        "subtraction": this.state.subtractionSelected,
+        "type": this.state.type,
+        "note": this.state.note,
+        "price": this.state.price,
+        "date": (date.getMonth() + 1) + '/' + date.getDate() + '/' +  date.getFullYear()
+      },
+    );
+    if (this.state.subtractionSelected === true) {
+      this.setState({
+        total: this.state.total - this.state.price
+      })
+    }
+    else if (this.state.subtractionSelected === false) {
+      this.setState({
+        total: this.state.total + this.state.price
+      })
+    }
+    this.refs.type.value = '';
+    this.refs.note.value = '';
+    this.refs.price.value = '';
+    this.setState({
+      subtractionSelected: false,
+      additionSelected: false
+    })
+    console.log(this.state.newItem);
+    localStorage.setItem('items', JSON.stringify(this.state.newItem));
+    console.log("localstorage", JSON.parse(localStorage.getItem('items')));
   }
   render() {
     return (
@@ -72,11 +96,11 @@ class NewItem extends Component {
         <div className="checkbox-list">
           <label className="checkbox">
             <input type="radio" className="checkbox-control" value="Addition" onClick={this.toggleAddition} checked={this.state.additionSelected}></input>
-            <span class="checkbox-label">Addition</span>
+            <span className="checkbox-label">Addition</span>
           </label>
           <label className="checkbox">
             <input type="radio" className="checkbox-control" value="Subtraction" onClick={this.toggleSubtraction} checked={this.state.subtractionSelected}></input>
-            <span class="checkbox-label">Subtraction</span>
+            <span className="checkbox-label">Subtraction</span>
           </label>
         </div>
         <br></br>
@@ -101,12 +125,12 @@ class NewItem extends Component {
           onChange={this.updatePrice.bind(this)}
         />
         <br></br>
-        <button className='ui large blue button' onClick={this.submit}>
+        <button className='ui large blue button' onClick={this.handleSubmit}>
           Submit
         </button>
         <br></br>
         <br></br>
-          Total : {this.state.total}
+          Total : ${this.state.total}
       </div>
     );
   }
