@@ -8,9 +8,26 @@ class App extends Component {
       this.state = {
         bank: 0,
         total: 0,
+        data: null
       };
       this.setTotal = this.setTotal.bind(this);
   }
+  componentDidMount() {
+      // Call our fetch function below once the component mounts
+    this.callBackendAPI()
+      .then(res => this.setState({ data: res.express }))
+      .catch(err => console.log(err));
+  }
+    // Fetches our GET route from the Express server. (Note the route we are fetching matches the GET route from server.js
+  callBackendAPI = async () => {
+    const response = await fetch('/express_backend');
+    const body = await response.json();
+
+    if (response.status !== 200) {
+      throw Error(body.message)
+    }
+    return body;
+  };
 
   setTotal(e) {
     this.setState({
@@ -44,6 +61,8 @@ class App extends Component {
 
           <div>
             Total : ${this.state.total}
+            <br></br>
+            {this.state.data};
           </div>
         </div>
       );
@@ -56,6 +75,8 @@ class App extends Component {
           />
           <div>
             Total : {this.state.total}
+            <br></br>
+            {this.state.data};
           </div>
         </div>
       )
