@@ -1,4 +1,7 @@
 import React, { Component } from 'react';
+import { getItemData, deleteData } from '../utils/expense-tracker-api';
+import axios from 'axios';
+
 
 class NewItem extends Component {
   constructor() {
@@ -15,12 +18,20 @@ class NewItem extends Component {
       this.toggleSubtraction = this.toggleSubtraction.bind(this);
       this.toggleAddition = this.toggleAddition.bind(this);
       this.handleSubmit = this.handleSubmit.bind(this);
+      this.handleDelete = this.handleDelete.bind(this);
   }
+
+  getItems() {
+    getItemData().then((items) => {
+      this.setState({ items });
+    });
+  }
+
   componentWillMount () {
     this.setState({
       total: this.props.location.state.total
     })
-
+    this.getItems();
   }
   toggleAddition () {
     if (this.state.additionSelected === false) {
@@ -56,19 +67,14 @@ class NewItem extends Component {
     })
     console.log(this.state.type);
   }
-  handleSubmit (evt) {
+  handleSubmit(e) {
     var date = new Date();
-    const newItem = this.state.newItem;
-    newItem.push(
-      {
-        "id": 1,
-        "subtraction": this.state.subtractionSelected,
-        "type": this.state.type,
-        "note": this.state.note,
-        "price": this.state.price,
-        "date": (date.getMonth() + 1) + '/' + date.getDate() + '/' +  date.getFullYear()
-      },
-    );
+    let id = this.state.items.length + 1;
+    let type = this.state.type.trim();
+    let note = this.state.note.trim();
+    let subtraction = this.state.subtractionSelected;
+    let price = this.state.price;
+    let itemDate = (date.getMonth() + 1) + '/' + date.getDate() + '/' +  date.getFullYear()
     if (this.state.subtractionSelected === true) {
       this.setState({
         total: this.state.total - this.state.price
@@ -86,9 +92,32 @@ class NewItem extends Component {
       subtractionSelected: false,
       additionSelected: false
     })
-    console.log(this.state.newItem);
-    localStorage.setItem('items', JSON.stringify(this.state.newItem));
-    console.log("localstorage", JSON.parse(localStorage.getItem('items')));
+    this.handleItemsubmit({ id: id, type: type, note: note, subtraction: subtraction, price: price, itemDate: itemDate});
+  }
+  handleItemsubmit(image) {
+    let items = this.state.items;
+    let newItems = items.concat([image]);
+    this.setState({ data: newItems });
+    axios.post('https://api.mlab.com/api/1/databases/expense-tracker/collections/items?apiKey=1W1tqvCxoGyGvyM0tDQ2AipLCiFzEAS5', image)
+      .then(res => {
+        this.setState({
+          data: res
+        });
+        console.log("Sucessfully added");
+      })
+      .catch(err => {
+        console.error(err);
+      });
+  }
+  handleDelete(e) {
+    e.preventDefault();
+    axios.delete('https://api.mlab.com/api/1/databases/rainbow/collections/items/?apiKey=1W1tqvCxoGyGvyM0tDQ2AipLCiFzEAS5')
+      .then(res => {
+        console.log('Items deleted');
+      })
+      .catch(err => {
+        console.error(err);
+      });
   }
   render() {
     return (
@@ -127,6 +156,9 @@ class NewItem extends Component {
         <br></br>
         <button className='ui large blue button' onClick={this.handleSubmit}>
           Submit
+        </button>
+        <button className='ui large blue button' onClick={this.handleDelete}>
+          Delete Data
         </button>
         <br></br>
         <br></br>
