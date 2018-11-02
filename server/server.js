@@ -22,18 +22,16 @@ app.get('/api', (req, res) => {
   res.json({ message: 'API Initalized! '});
 })
 
-//adding the /comments route to our /api router
+
 app.get('/api/items', (req, res) => {
     Item.find(function(err, items) {
         if (err)
             res.send(err);
-        //responds with a json object of our database comments.
         res.json(items)
     });
 })
 app.post('/api/items', (req, res) => {
     const item = new Item();
-    //body parser lets us use the req.body
     item.type = req.body.type;
     item.note = req.body.note;
     item.price = req.body.price;
