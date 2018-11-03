@@ -6,7 +6,7 @@ const TOTAL_BASE_URL = 'https://api.mlab.com/api/1/databases/expense-tracker/col
 export {getItemData, deleteData};
 
 function deleteData() {
-  return axios.delete(BASE_URL)
+  return axios.delete(ITEM_BASE_URL)
   .then(response =>
     response.json().then(json => {
       return json;
@@ -15,7 +15,7 @@ function deleteData() {
 }
 
 function getItemData() {
-  const url =BASE_URL;
+  const url =ITEM_BASE_URL;
   return axios.get(url).then(response => response.data);
 }
 
