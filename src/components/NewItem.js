@@ -94,11 +94,11 @@ class NewItem extends Component {
     })
     this.handleItemsubmit({ id: id, type: type, note: note, subtraction: subtraction, price: price, itemDate: itemDate});
   }
-  handleItemsubmit(image) {
+  handleItemsubmit(item) {
     let items = this.state.items;
-    let newItems = items.concat([image]);
+    let newItems = items.concat([item]);
     this.setState({ data: newItems });
-    axios.post('https://api.mlab.com/api/1/databases/expense-tracker/collections/items?apiKey=1W1tqvCxoGyGvyM0tDQ2AipLCiFzEAS5', image)
+    axios.post('https://api.mlab.com/api/1/databases/expense-tracker/collections/items?apiKey=1W1tqvCxoGyGvyM0tDQ2AipLCiFzEAS5', item)
       .then(res => {
         this.setState({
           data: res
@@ -109,15 +109,16 @@ class NewItem extends Component {
         console.error(err);
       });
   }
+
   handleDelete(e) {
-    e.preventDefault();
-    axios.delete('https://api.mlab.com/api/1/databases/rainbow/collections/items/?apiKey=1W1tqvCxoGyGvyM0tDQ2AipLCiFzEAS5')
-      .then(res => {
-        console.log('Items deleted');
-      })
-      .catch(err => {
-        console.error(err);
-      });
+    for (var i = 0; i < this.state.items.length; i++) {
+      let id = this.state.items[i]._id.$oid;
+      axios.delete('https://api.mlab.com/api/1/databases/expense-tracker/collections/items/' + id + '?apiKey=1W1tqvCxoGyGvyM0tDQ2AipLCiFzEAS5')
+        .then(res => {
+          console.log(res);
+          console.log(res.data);
+        })
+    }
   }
   render() {
     return (
@@ -158,7 +159,7 @@ class NewItem extends Component {
           Submit
         </button>
         <button className='ui large blue button' onClick={this.handleDelete}>
-          Delete Data
+          Delete All Data
         </button>
         <br></br>
         <br></br>

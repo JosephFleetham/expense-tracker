@@ -7,6 +7,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const Item = require('../src/models/item.js');
+const Total = require('../src/models/total.js');
 
 
 app.use(bodyParser.json());
@@ -15,13 +16,12 @@ app.use(cors());
 
 mongoose.connect('mongodb://jfleetham:asd123@ds149593.mlab.com:49593/expense-tracker');
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 
 app.get('/api', (req, res) => {
   res.json({ message: 'API Initalized! '});
 })
-
 
 app.get('/api/items', (req, res) => {
     Item.find(function(err, items) {
@@ -46,10 +46,37 @@ app.post('/api/items', (req, res) => {
     });
 });
 
+app.post('/api/total', (req, res) => {
+    const item = new Total();
+    item.total = req.body.total;
+    item.save(function(err) {
+        if (err)
+            res.send(err);
+        res.json({
+            message: 'Total successfully added!'
+        });
+    });
+});
+
+app.put('/api/total/:total_id', (req, res) => {
+  Total.findById(req.params.total_id, function(err, total) {
+    if (err)
+      res.send(err);s
+    total.save(function(err) {
+      if (err)
+        res.send(err);
+      res.json({
+        message: 'Total has been updated'
+      });
+
+    });
+  });
+});
+
 app.delete('/api/items/:item_id', (req, res) => {
-  Image.remove({
-    _id: req.params.image_id
-  }, function(err, image) {
+  Item.remove({
+    _id: req.params.item_id
+  }, function(err, item) {
     if (err)
       res.send(err);
     res.json({
@@ -58,5 +85,6 @@ app.delete('/api/items/:item_id', (req, res) => {
   })
 });
 
+
 app.listen(PORT);
-console.log('Listening on localhost:3333');
+console.log('Listening on localhost:8080');
