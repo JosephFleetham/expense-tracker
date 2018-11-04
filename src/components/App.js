@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { Link, BrowserRouter } from 'react-router-dom';
 import TopNav from './TopNav.js';
+import axios from 'axios';
+import { getTotalData, deleteData } from '../utils/expense-tracker-api';
 
 class App extends Component {
   constructor() {
@@ -10,33 +12,54 @@ class App extends Component {
         total: 0,
         data: null
       };
-      this.setTotal = this.setTotal.bind(this);
+      this.handleSubmit = this.handleSubmit.bind(this);
+      this.handleTotalSubmit = this.handleTotalSubmit.bind(this);
+      this.handleDelete = this.handleDelete.bind(this);
   }
-  componentDidMount() {
-    this.callBackendAPI()
-      .then(res => this.setState({ data: res.express }))
-      .catch(err => console.log(err));
+
+  getTotals() {
+    getTotalData().then((totals) => {
+      this.setState({ totals });
+    });
   }
-  callBackendAPI = async () => {
-    const response = await fetch('/total');
-    const body = await response.json();
 
-    if (response.status !== 200) {
-      throw Error(body.message)
-    }
-    return body;
-  };
+  componentWillMount () {
+    this.getTotals();
+  }
 
-  setTotal(e) {
+  handleSubmit(e) {
+    console.log("bank", this.state.bank);
+    var date = new Date();
+    let total = this.state.bank;
+    let totalDate = (date.getMonth() + 1) + '/' + date.getDate() + '/' +  date.getFullYear()
+    this.handleTotalSubmit({ total: total, totalDate: totalDate });
     this.setState({
       total: Number(this.state.bank)
     });
-    this.setState({
-      bank: 0
-    });
-    this.refs.total.value = 0;
-    console.log("total",this.state.total);
   }
+  handleTotalSubmit(item) {
+    console.log(item);
+    axios.post('https://api.mlab.com/api/1/databases/expense-tracker/collections/total?apiKey=1W1tqvCxoGyGvyM0tDQ2AipLCiFzEAS5', item)
+      .then(res => {
+
+        console.log("Sucessfully added");
+      })
+      .catch(err => {
+        console.error(err);
+      });
+  }
+
+  handleDelete(e) {
+    for (var i = 0; i < this.state.totals.length; i++) {
+      let id = this.state.totals[i]._id.$oid;
+      axios.delete('https://api.mlab.com/api/1/databases/expense-tracker/collections/total/' + id + '?apiKey=1W1tqvCxoGyGvyM0tDQ2AipLCiFzEAS5')
+        .then(res => {
+          console.log(res);
+          console.log(res.data);
+        })
+    }
+  }
+
   updateTotalValue (evt) {
     this.setState({
       bank: Number(evt.target.value)
@@ -53,7 +76,7 @@ class App extends Component {
             placeholder="Enter..."
             onChange={this.updateTotalValue.bind(this)}
           />
-          <button className='ui large blue button' onClick={this.setTotal}>
+          <button className='ui large blue button' onClick={this.handleSubmit}>
             Set Initial Amount
           </button>
 
@@ -72,9 +95,11 @@ class App extends Component {
             total={this.state.total}
           />
           <div>
-            Total : {this.state.total}
+            Total : ${this.state.total}
             <br></br>
-            {this.state.data};
+            <button className='ui large blue button' onClick={this.handleDelete}>
+              Delete Totals Data
+            </button>
           </div>
         </div>
       )

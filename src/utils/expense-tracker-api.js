@@ -3,7 +3,7 @@ import axios from 'axios';
 const ITEM_BASE_URL = 'https://api.mlab.com/api/1/databases/expense-tracker/collections/items?apiKey=1W1tqvCxoGyGvyM0tDQ2AipLCiFzEAS5';
 const TOTAL_BASE_URL = 'https://api.mlab.com/api/1/databases/expense-tracker/collections/total?apiKey=1W1tqvCxoGyGvyM0tDQ2AipLCiFzEAS5';
 
-export {getItemData, deleteData};
+export {getItemData, deleteData, getTotalData};
 
 function deleteData() {
   return axios.delete(ITEM_BASE_URL)

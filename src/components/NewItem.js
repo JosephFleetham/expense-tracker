@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { getItemData, deleteData } from '../utils/expense-tracker-api';
+import { getItemData, deleteData, getTotalData } from '../utils/expense-tracker-api';
 import axios from 'axios';
 
 
@@ -21,6 +21,12 @@ class NewItem extends Component {
       this.handleDelete = this.handleDelete.bind(this);
   }
 
+  getTotals() {
+    getTotalData().then((totals) => {
+      this.setState({ totals });
+    });
+  }
+
   getItems() {
     getItemData().then((items) => {
       this.setState({ items });
@@ -32,6 +38,7 @@ class NewItem extends Component {
       total: this.props.location.state.total
     })
     this.getItems();
+    this.getTotals();
   }
   toggleAddition () {
     if (this.state.additionSelected === false) {
@@ -75,6 +82,7 @@ class NewItem extends Component {
     let subtraction = this.state.subtractionSelected;
     let price = this.state.price;
     let itemDate = (date.getMonth() + 1) + '/' + date.getDate() + '/' +  date.getFullYear()
+    let total = this.state.total;
     if (this.state.subtractionSelected === true) {
       this.setState({
         total: this.state.total - this.state.price
@@ -94,6 +102,18 @@ class NewItem extends Component {
     })
     this.handleItemsubmit({ id: id, type: type, note: note, subtraction: subtraction, price: price, itemDate: itemDate});
   }
+
+  handleTotalUpdate(total) {
+    let id = this.state.totals._id.$oid;
+    axios.put('https://api.mlab.com/api/1/databases/expense-tracker/collections/total/' + id + '?apiKey=1W1tqvCxoGyGvyM0tDQ2AipLCiFzEAS5', total)
+      .then(res => {
+        console.log("Total updated)")
+      })
+      .catch(err => {
+        console.log(err);
+      })
+  }
+
   handleItemsubmit(item) {
     let items = this.state.items;
     let newItems = items.concat([item]);

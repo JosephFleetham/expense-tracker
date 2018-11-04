@@ -30,6 +30,15 @@ app.get('/api/items', (req, res) => {
         res.json(items)
     });
 })
+
+app.get('/api/total', (req, res) => {
+    Total.find(function(err, items) {
+        if (err)
+            res.send(err);
+        res.json(items)
+    });
+})
+
 app.post('/api/items', (req, res) => {
     const item = new Item();
     item.type = req.body.type;
@@ -47,7 +56,7 @@ app.post('/api/items', (req, res) => {
 });
 
 app.post('/api/total', (req, res) => {
-    const item = new Total();
+    const total = new Total();
     item.total = req.body.total;
     item.save(function(err) {
         if (err)
