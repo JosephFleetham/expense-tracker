@@ -19,6 +19,7 @@ class NewItem extends Component {
       this.toggleAddition = this.toggleAddition.bind(this);
       this.handleSubmit = this.handleSubmit.bind(this);
       this.handleDelete = this.handleDelete.bind(this);
+      this.handleTotalUpdate = this.handleTotalUpdate.bind(this);
   }
 
   getTotals() {
@@ -82,16 +83,17 @@ class NewItem extends Component {
     let subtraction = this.state.subtractionSelected;
     let price = this.state.price;
     let itemDate = (date.getMonth() + 1) + '/' + date.getDate() + '/' +  date.getFullYear()
-    let total = this.state.total;
     if (this.state.subtractionSelected === true) {
       this.setState({
         total: this.state.total - this.state.price
       })
+      var newTotal = this.state.total - this.state.price;
     }
     else if (this.state.subtractionSelected === false) {
       this.setState({
         total: this.state.total + this.state.price
       })
+      var newTotal = this.state.total + this.state.price;
     }
     this.refs.type.value = '';
     this.refs.note.value = '';
@@ -101,13 +103,15 @@ class NewItem extends Component {
       additionSelected: false
     })
     this.handleItemsubmit({ id: id, type: type, note: note, subtraction: subtraction, price: price, itemDate: itemDate});
+    this.handleTotalUpdate({ newTotal: newTotal });
   }
 
   handleTotalUpdate(total) {
-    let id = this.state.totals._id.$oid;
+    console.log(this.state.totals);
+    let id = this.state.totals[0]._id.$oid;
     axios.put('https://api.mlab.com/api/1/databases/expense-tracker/collections/total/' + id + '?apiKey=1W1tqvCxoGyGvyM0tDQ2AipLCiFzEAS5', total)
       .then(res => {
-        console.log("Total updated)")
+        console.log("Total updated")
       })
       .catch(err => {
         console.log(err);
