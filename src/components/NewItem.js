@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { getItemData, deleteData, getTotalData } from '../utils/expense-tracker-api';
 import axios from 'axios';
+import TopNav from './TopNav.js';
 
 
 class NewItem extends Component {
@@ -19,14 +20,17 @@ class NewItem extends Component {
       this.toggleAddition = this.toggleAddition.bind(this);
       this.handleSubmit = this.handleSubmit.bind(this);
       this.handleDelete = this.handleDelete.bind(this);
-      this.handleTotalUpdate = this.handleTotalUpdate.bind(this);
+      this.handleNewTotal = this.handleNewTotal.bind(this);
   }
 
-  getTotals() {
-    getTotalData().then((totals) => {
-      this.setState({ totals });
-    });
-  }
+  // getTotals() {
+  //   getTotalData().then((totals) => {
+  //     this.setState({ totals });
+  //     this.setState({
+  //       newestTotal : this.state.totals[this.state.totals.length - 1].total
+  //     })
+  //   });
+  // }
 
   getItems() {
     getItemData().then((items) => {
@@ -35,11 +39,16 @@ class NewItem extends Component {
   }
 
   componentWillMount () {
-    this.setState({
-      total: this.props.location.state.total
-    })
+
+    console.log(this.props);
+    // this.setState({
+    //   total: this.props.location.state.total
+    // })
     this.getItems();
-    this.getTotals();
+    this.setState({
+      total : this.props.location.state.newestTotal
+    })
+    // this.getTotals();
   }
   toggleAddition () {
     if (this.state.additionSelected === false) {
@@ -83,17 +92,20 @@ class NewItem extends Component {
     let subtraction = this.state.subtractionSelected;
     let price = this.state.price;
     let itemDate = (date.getMonth() + 1) + '/' + date.getDate() + '/' +  date.getFullYear()
+    let totalDate = (date.getMonth() + 1) + '/' + date.getDate() + '/' +  date.getFullYear()
     if (this.state.subtractionSelected === true) {
       this.setState({
         total: this.state.total - this.state.price
       })
-      var newTotal = this.state.total - this.state.price;
+      var total = this.state.total - this.state.price;
+      localStorage.setItem( 'total', total )
     }
     else if (this.state.subtractionSelected === false) {
       this.setState({
         total: this.state.total + this.state.price
       })
-      var newTotal = this.state.total + this.state.price;
+      var total = this.state.total + this.state.price;
+      localStorage.setItem( 'total', total )
     }
     this.refs.type.value = '';
     this.refs.note.value = '';
@@ -103,15 +115,18 @@ class NewItem extends Component {
       additionSelected: false
     })
     this.handleItemsubmit({ id: id, type: type, note: note, subtraction: subtraction, price: price, itemDate: itemDate});
-    this.handleTotalUpdate({ newTotal: newTotal });
+    this.handleNewTotal({ total: total, totalDate: totalDate });
+    console.log("props", this.props);
+    localStorage.setItem( 'total', total );
+
   }
 
-  handleTotalUpdate(total) {
-    console.log(this.state.totals);
-    let id = this.state.totals[0]._id.$oid;
-    axios.put('https://api.mlab.com/api/1/databases/expense-tracker/collections/total/' + id + '?apiKey=1W1tqvCxoGyGvyM0tDQ2AipLCiFzEAS5', total)
+  handleNewTotal(newestTotal) {
+    console.log("totals", this.state.totals);
+    // let id = this.state.totals[0]._id.$oid;
+    axios.post('https://api.mlab.com/api/1/databases/expense-tracker/collections/total?apiKey=1W1tqvCxoGyGvyM0tDQ2AipLCiFzEAS5', newestTotal)
       .then(res => {
-        console.log("Total updated")
+        console.log("New Total Added")
       })
       .catch(err => {
         console.log(err);
@@ -144,9 +159,13 @@ class NewItem extends Component {
         })
     }
   }
+
   render() {
     return (
       <div>
+        <TopNav
+
+         />
         <div className="checkbox-list">
           <label className="checkbox">
             <input type="radio" className="checkbox-control" value="Addition" onClick={this.toggleAddition} checked={this.state.additionSelected}></input>
@@ -187,7 +206,7 @@ class NewItem extends Component {
         </button>
         <br></br>
         <br></br>
-          Total : ${this.state.total}
+          Total : ${localStorage.getItem( 'total' )}
       </div>
     );
   }

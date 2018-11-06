@@ -10,7 +10,8 @@ class App extends Component {
       this.state = {
         bank: 0,
         total: 0,
-        data: null
+        data: null,
+        newestTotal: 0
       };
       this.handleSubmit = this.handleSubmit.bind(this);
       this.handleTotalSubmit = this.handleTotalSubmit.bind(this);
@@ -20,12 +21,22 @@ class App extends Component {
   getTotals() {
     getTotalData().then((totals) => {
       this.setState({ totals });
+      if (this.state.totals.length >= 1) {
+        this.setState({
+          newestTotal: this.state.totals[this.state.totals.length - 1].total
+        })
+        console.log(this.state.newestTotal);
+      }
     });
+
   }
 
   componentWillMount () {
+    console.log(this.props);
     this.getTotals();
   }
+
+
 
   handleSubmit(e) {
     console.log("bank", this.state.bank);
@@ -37,17 +48,26 @@ class App extends Component {
       total: Number(this.state.bank)
     });
   }
+  
   handleTotalSubmit(item) {
     console.log(item);
     axios.post('https://api.mlab.com/api/1/databases/expense-tracker/collections/total?apiKey=1W1tqvCxoGyGvyM0tDQ2AipLCiFzEAS5', item)
-      .then(res => {
-
-        console.log("Sucessfully added");
+    .then(res => {
+      this.setState({
+        data: res
+      });
+      console.log("Sucessfully added", this.state.data);
+      this.setState({
+        newestTotal : this.state.data.data.total
       })
+      console.log(this.state.newestTotal);
+    })
       .catch(err => {
         console.error(err);
       });
   }
+
+
 
   handleDelete(e) {
     for (var i = 0; i < this.state.totals.length; i++) {
@@ -67,7 +87,8 @@ class App extends Component {
   }
 
   render() {
-    if (this.state.total === 0) {
+    const newestTotal = this.state.newestTotal;
+    if (this.state.newestTotal === 0) {
       return (
         <div className="EnterInitial">
           <input
@@ -81,9 +102,7 @@ class App extends Component {
           </button>
 
           <div>
-            Total : ${this.state.total}
-            <br></br>
-            {this.state.data};
+            Total : ${this.state.newestTotal}
           </div>
         </div>
       );
@@ -91,11 +110,9 @@ class App extends Component {
     else {
       return (
         <div className="App">
-          <TopNav
-            total={this.state.total}
-          />
+          <TopNav />
           <div>
-            Total : ${this.state.total}
+            Total : ${this.state.newestTotal}
             <br></br>
             <button className='ui large blue button' onClick={this.handleDelete}>
               Delete Totals Data
