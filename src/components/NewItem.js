@@ -23,15 +23,6 @@ class NewItem extends Component {
       this.handleNewTotal = this.handleNewTotal.bind(this);
   }
 
-  // getTotals() {
-  //   getTotalData().then((totals) => {
-  //     this.setState({ totals });
-  //     this.setState({
-  //       newestTotal : this.state.totals[this.state.totals.length - 1].total
-  //     })
-  //   });
-  // }
-
   getItems() {
     getItemData().then((items) => {
       this.setState({ items });
@@ -39,11 +30,6 @@ class NewItem extends Component {
   }
 
   componentWillMount () {
-
-    console.log(this.props);
-    // this.setState({
-    //   total: this.props.location.state.total
-    // })
     this.getItems();
     this.setState({
       total : this.props.location.state.newestTotal
@@ -117,13 +103,11 @@ class NewItem extends Component {
     this.handleItemsubmit({ id: id, type: type, note: note, subtraction: subtraction, price: price, itemDate: itemDate});
     this.handleNewTotal({ total: total, totalDate: totalDate });
     console.log("props", this.props);
-    localStorage.setItem( 'total', total );
 
   }
 
   handleNewTotal(newestTotal) {
     console.log("totals", this.state.totals);
-    // let id = this.state.totals[0]._id.$oid;
     axios.post('https://api.mlab.com/api/1/databases/expense-tracker/collections/total?apiKey=1W1tqvCxoGyGvyM0tDQ2AipLCiFzEAS5', newestTotal)
       .then(res => {
         console.log("New Total Added")
