@@ -21,21 +21,18 @@ class NewItem extends Component {
       this.handleSubmit = this.handleSubmit.bind(this);
       this.handleDelete = this.handleDelete.bind(this);
       this.handleNewTotal = this.handleNewTotal.bind(this);
+      this.handleItemSubmit = this.handleItemSubmit.bind(this);
   }
 
-  getItems() {
-    getItemData().then((items) => {
-      this.setState({ items });
-    });
-  }
 
   componentWillMount () {
-    this.getItems();
+    console.log("NewItem", this.props);
     this.setState({
-      total : this.props.location.state.newestTotal
+      total : this.props.location.state.newestTotal,
+      items : this.props.location.state.items
     })
-    // this.getTotals();
   }
+
   toggleAddition () {
     if (this.state.additionSelected === false) {
       this.setState({
@@ -44,6 +41,7 @@ class NewItem extends Component {
       })
     }
   }
+
   toggleSubtraction () {
     if (this.state.subtractionSelected === false) {
       this.setState({
@@ -52,24 +50,28 @@ class NewItem extends Component {
       })
     }
   }
+
   updateType (evt) {
     this.setState({
       type: evt.target.value
     })
     console.log(this.state.type);
   }
+
   updateNote (evt) {
     this.setState({
       note: evt.target.value
     })
     console.log(this.state.type);
   }
+
   updatePrice (evt) {
     this.setState({
       price: Number(evt.target.value)
     })
     console.log(this.state.type);
   }
+  
   handleSubmit(e) {
     var date = new Date();
     let id = this.state.items.length + 1;
@@ -100,7 +102,7 @@ class NewItem extends Component {
       subtractionSelected: false,
       additionSelected: false
     })
-    this.handleItemsubmit({ id: id, type: type, note: note, subtraction: subtraction, price: price, itemDate: itemDate});
+    this.handleItemSubmit({ id: id, type: type, note: note, subtraction: subtraction, price: price, itemDate: itemDate});
     this.handleNewTotal({ total: total, totalDate: totalDate });
     console.log("props", this.props);
 
@@ -117,7 +119,7 @@ class NewItem extends Component {
       })
   }
 
-  handleItemsubmit(item) {
+  handleItemSubmit(item) {
     let items = this.state.items;
     let newItems = items.concat([item]);
     this.setState({ data: newItems });
@@ -147,9 +149,7 @@ class NewItem extends Component {
   render() {
     return (
       <div>
-        <TopNav
-
-         />
+        <TopNav/>
         <div className="checkbox-list">
           <label className="checkbox">
             <input type="radio" className="checkbox-control" value="Addition" onClick={this.toggleAddition} checked={this.state.additionSelected}></input>

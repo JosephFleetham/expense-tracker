@@ -1,9 +1,20 @@
 import React, { Component } from 'react';
-import {Bar} from 'react-chartjs-2';
+import {Line} from 'react-chartjs-2';
 
 
 
 class Metrics extends React.Component {
+  constructor() {
+      super();
+      this.state = {
+
+      };
+
+  }
+
+  componentWillMount() {
+  console.log(this.props);
+  }
     render(){
       const data = {
         labels: ["Monday", "Tuesday", "W", "R", "F", "S", "S"],
@@ -19,7 +30,7 @@ class Metrics extends React.Component {
         }]
       }
       return(
-             <Bar
+             <Line
 	         data={data}
 	         width={7}
 	         height={3}

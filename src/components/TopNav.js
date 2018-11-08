@@ -9,9 +9,20 @@ class TopNav extends Component {
       super();
       this.state = {
         newestTotal: 0,
+        totals: [],
+        items: []
       };
-      this.checkTotal = this.checkTotal.bind(this);
+      this.checkState = this.checkState.bind(this);
   }
+
+  getItems() {
+    getItemData().then((items) => {
+      this.setState({ items });
+      console.log("items", this.state.items);
+    });
+
+  }
+
   getTotals() {
     getTotalData().then((totals) => {
       this.setState({ totals });
@@ -25,10 +36,11 @@ class TopNav extends Component {
 
   componentDidMount () {
     this.getTotals();
+    this.getItems();
   }
 
-  checkTotal(e) {
-    console.log(this.state.newestTotal);
+  checkState(e) {
+    console.log(this.state);
   }
   render() {
     return (
@@ -46,7 +58,8 @@ class TopNav extends Component {
         <Link to ={{
           pathname: "/newitem",
           state: {
-              newestTotal: this.state.newestTotal
+              newestTotal: this.state.newestTotal,
+              items : this.state.items
           }
         }}>
           <button className='ui large blue button' onClick={this.setTotal}>
@@ -56,13 +69,18 @@ class TopNav extends Component {
         <Link to ={{
           pathname: "/metrics",
           state: {
-              newestTotal: this.state.newestTotal
+              newestTotal: this.state.newestTotal,
+              items: this.state.items,
+              totals: this.state.totals
           }
         }}>
           <button className='ui large blue button' onClick={this.checkTotal}>
             Metrics
           </button>
         </Link>
+        <button className='ui large blue button' onClick={this.checkState}>
+          Check State
+        </button>
       </div>
     )
   }
