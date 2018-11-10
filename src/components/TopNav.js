@@ -5,14 +5,15 @@ import { getItemData, deleteData, getTotalData } from '../utils/expense-tracker-
 
 
 class TopNav extends Component {
-  constructor() {
-      super();
+  constructor(props) {
+      super(props);
       this.state = {
         newestTotal: 0,
         totals: [],
         items: []
       };
       this.checkState = this.checkState.bind(this);
+      this.updateState = this.updateState.bind(this);
   }
 
   getItems() {
@@ -34,14 +35,24 @@ class TopNav extends Component {
     });
   }
 
-  componentDidMount () {
-    this.getTotals();
+  componentWillMount () {
     this.getItems();
+    this.getTotals();
+  }
+
+  componentDidMount () {
+
   }
 
   checkState(e) {
     console.log(this.state);
+    console.log("TopNav props", this.props);
   }
+
+  updateState () {
+
+  }
+
   render() {
     return (
       <div>
@@ -59,10 +70,11 @@ class TopNav extends Component {
           pathname: "/newitem",
           state: {
               newestTotal: this.state.newestTotal,
-              items : this.state.items
+              items : this.state.items,
+              totals: this.state.totals,
           }
         }}>
-          <button className='ui large blue button' onClick={this.setTotal}>
+          <button className='ui large blue button' onClick={this.updateState}>
             New Item
           </button>
         </Link>
@@ -74,7 +86,7 @@ class TopNav extends Component {
               totals: this.state.totals
           }
         }}>
-          <button className='ui large blue button' onClick={this.checkTotal}>
+          <button className='ui large blue button' onClick={this.someshit}>
             Metrics
           </button>
         </Link>

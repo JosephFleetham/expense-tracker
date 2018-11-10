@@ -14,7 +14,8 @@ class NewItem extends Component {
         type: '',
         note: '',
         price: 0,
-        newItem: []
+        newItem: [],
+        totals: []
       };
       this.toggleSubtraction = this.toggleSubtraction.bind(this);
       this.toggleAddition = this.toggleAddition.bind(this);
@@ -26,11 +27,17 @@ class NewItem extends Component {
 
 
   componentWillMount () {
-    console.log("NewItem", this.props);
+    console.log("NewItem props", this.props);
     this.setState({
       total : this.props.location.state.newestTotal,
-      items : this.props.location.state.items
+      items : this.props.location.state.items,
+      totals: this.props.location.state.totals
     })
+  }
+
+  componentDidMount () {
+    console.log("NewItem props", this.props);
+    console.log("totals", this.state.totals);
   }
 
   toggleAddition () {
@@ -71,7 +78,7 @@ class NewItem extends Component {
     })
     console.log(this.state.type);
   }
-  
+
   handleSubmit(e) {
     var date = new Date();
     let id = this.state.items.length + 1;
@@ -80,48 +87,19 @@ class NewItem extends Component {
     let subtraction = this.state.subtractionSelected;
     let price = this.state.price;
     let itemDate = (date.getMonth() + 1) + '/' + date.getDate() + '/' +  date.getFullYear()
-    let totalDate = (date.getMonth() + 1) + '/' + date.getDate() + '/' +  date.getFullYear()
-    if (this.state.subtractionSelected === true) {
-      this.setState({
-        total: this.state.total - this.state.price
-      })
-      var total = this.state.total - this.state.price;
-      localStorage.setItem( 'total', total )
-    }
-    else if (this.state.subtractionSelected === false) {
-      this.setState({
-        total: this.state.total + this.state.price
-      })
-      var total = this.state.total + this.state.price;
-      localStorage.setItem( 'total', total )
-    }
     this.refs.type.value = '';
     this.refs.note.value = '';
     this.refs.price.value = '';
-    this.setState({
-      subtractionSelected: false,
-      additionSelected: false
-    })
     this.handleItemSubmit({ id: id, type: type, note: note, subtraction: subtraction, price: price, itemDate: itemDate});
-    this.handleNewTotal({ total: total, totalDate: totalDate });
-    console.log("props", this.props);
 
   }
 
-  handleNewTotal(newestTotal) {
-    console.log("totals", this.state.totals);
-    axios.post('https://api.mlab.com/api/1/databases/expense-tracker/collections/total?apiKey=1W1tqvCxoGyGvyM0tDQ2AipLCiFzEAS5', newestTotal)
-      .then(res => {
-        console.log("New Total Added")
-      })
-      .catch(err => {
-        console.log(err);
-      })
-  }
 
   handleItemSubmit(item) {
+    var date = new Date();
     let items = this.state.items;
     let newItems = items.concat([item]);
+    let totalDate = (date.getMonth() + 1) + '/' + date.getDate() + '/' +  date.getFullYear()
     this.setState({ data: newItems });
     axios.post('https://api.mlab.com/api/1/databases/expense-tracker/collections/items?apiKey=1W1tqvCxoGyGvyM0tDQ2AipLCiFzEAS5', item)
       .then(res => {
@@ -133,6 +111,36 @@ class NewItem extends Component {
       .catch(err => {
         console.error(err);
       });
+    if (this.state.subtractionSelected === true) {
+      this.setState({
+        total: this.state.total - this.state.price,
+      })
+      var total = this.state.total - this.state.price;
+      localStorage.setItem( 'total', total )
+    }
+    else if (this.state.subtractionSelected === false) {
+      this.setState({
+        total: this.state.total + this.state.price,
+      })
+      var total = this.state.total + this.state.price;
+      localStorage.setItem( 'total', total )
+    }
+    this.setState({
+      subtractionSelected: false,
+      additionSelected: false
+    })
+    this.handleNewTotal({ total: total, totalDate: totalDate });
+  }
+
+  handleNewTotal(newestTotal) {
+    axios.post('https://api.mlab.com/api/1/databases/expense-tracker/collections/total?apiKey=1W1tqvCxoGyGvyM0tDQ2AipLCiFzEAS5', newestTotal)
+      .then(res => {
+        this.state.totals.push(newestTotal);
+        console.log("New Total Added", this.state.totals);
+      })
+      .catch(err => {
+        console.log(err);
+      })
   }
 
   handleDelete(e) {
@@ -149,7 +157,9 @@ class NewItem extends Component {
   render() {
     return (
       <div>
-        <TopNav/>
+        <TopNav
+          totals={this.state.totals}
+        />
         <div className="checkbox-list">
           <label className="checkbox">
             <input type="radio" className="checkbox-control" value="Addition" onClick={this.toggleAddition} checked={this.state.additionSelected}></input>
