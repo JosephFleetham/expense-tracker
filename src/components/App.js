@@ -16,14 +16,20 @@ class App extends Component {
         newestTotal: null,
         newItem: false,
         metrics: false,
+        subtractionSelected: false,
+        additionSelected: false,
+        metricsTotals: [],
+        totalDates: [],
+        itemsAdded: 0,
+        itemsSubtracted: 0
       };
       this.handleSubmit = this.handleSubmit.bind(this);
       this.handleTotalSubmit = this.handleTotalSubmit.bind(this);
-      this.handleDelete = this.handleDelete.bind(this);
+      this.handleTotalsDelete = this.handleTotalsDelete.bind(this);
       this.toggleSubtraction = this.toggleSubtraction.bind(this);
       this.toggleAddition = this.toggleAddition.bind(this);
       this.handleNewItemSubmit = this.handleNewItemSubmit.bind(this);
-      this.handleDelete = this.handleDelete.bind(this);
+      this.handleItemsDelete = this.handleItemsDelete.bind(this);
       this.handleNewTotal = this.handleNewTotal.bind(this);
       this.handleItemAPISubmit = this.handleItemAPISubmit.bind(this);
       this.metrics = this.metrics.bind(this);
@@ -43,13 +49,14 @@ class App extends Component {
   getTotals() {
     getTotalData().then((totals) => {
       this.setState({ totals });
-      if (this.state.totals != undefined) {
+      if (this.state.totals.total != undefined || this.state.totals.length >= 1) {
         this.setState({
           newestTotal : this.state.totals[this.state.totals.length - 1].total
         })
+        localStorage.setItem( 'total', this.state.totals[this.state.totals.length - 1].total )
       }
       console.log("API totals", this.state.totals);
-      // localStorage.setItem( 'total', this.state.totals[this.state.totals.length - 1].total )
+
     });
   }
 
@@ -59,20 +66,7 @@ class App extends Component {
   }
 
   componentDidMount () {
-    if (this.state.totals != undefined) {
-      for (var i = 0; i < this.state.totals.length; i++) {
-        this.state.totals.push(this.state.totals[i].total)
-        this.state.totalDates.push(this.state.totals[i].totalDate)
-      }
-      for (var i = 0; i < this.state.items.length; i++) {
-        if (this.state.items[i].subtraction === true) {
-          this.state.itemsSubtracted += 1;
-        }
-        else if (this.state.items[i].subtraction === false) {
-          this.state.itemsAdded += 1;
-        }
-      }
-    }
+
     console.log("Initial state", this.state);
   }
 
@@ -83,10 +77,11 @@ class App extends Component {
     var date = new Date();
     let total = this.state.bank;
     let totalDate = (date.getMonth() + 1) + '/' + date.getDate() + '/' +  date.getFullYear()
+    localStorage.setItem( 'total', this.state.bank )
     this.handleTotalSubmit({ total: total, totalDate: totalDate });
-    this.setState({
-      total: Number(this.state.bank)
-    });
+    // this.setState({
+    //   total: Number(this.state.bank)
+    // });
   }
 
   handleTotalSubmit(item) {
@@ -109,7 +104,7 @@ class App extends Component {
 
 
 
-  handleDelete(e) {
+  handleTotalsDelete(e) {
     for (var i = 0; i < this.state.totals.length; i++) {
       let id = this.state.totals[i]._id.$oid;
       axios.delete('https://api.mlab.com/api/1/databases/expense-tracker/collections/total/' + id + '?apiKey=1W1tqvCxoGyGvyM0tDQ2AipLCiFzEAS5')
@@ -118,33 +113,13 @@ class App extends Component {
           console.log(res.data);
         })
     }
+    localStorage.clear();
   }
 
   updateTotalValue (evt) {
     this.setState({
       bank: Number(evt.target.value)
     });
-  }
-
-  newItem () {
-    this.setState({
-      newItem: true,
-      metrics: false
-    })
-  }
-
-  metrics () {
-    this.setState({
-      metrics: true,
-      newItem: false
-    })
-  }
-
-  home () {
-    this.setState({
-      metrics: false,
-      newItem: false
-    })
   }
 
   toggleAddition () {
@@ -187,6 +162,7 @@ class App extends Component {
   }
 
   handleNewItemSubmit(e) {
+    console.log("submit state", this.state);
     var date = new Date();
     let id = this.state.items.length + 1;
     let type = this.state.type.trim();
@@ -213,23 +189,24 @@ class App extends Component {
         this.setState({
           data: res
         });
-        console.log("Sucessfully added");
+        this.state.items.push(item);
+        console.log("Item Sucessfully added", this.state.items);
       })
       .catch(err => {
         console.error(err);
       });
     if (this.state.subtractionSelected === true) {
       this.setState({
-        total: this.state.total - this.state.price,
+        total: this.state.newestTotal - this.state.price,
       })
-      var total = this.state.total - this.state.price;
+      var total = this.state.newestTotal - this.state.price;
       localStorage.setItem( 'total', total )
     }
     else if (this.state.subtractionSelected === false) {
       this.setState({
-        total: this.state.total + this.state.price,
+        total: this.state.newestTotal + this.state.price,
       })
-      var total = this.state.total + this.state.price;
+      var total = this.state.newestTotal + this.state.price;
       localStorage.setItem( 'total', total )
     }
     this.setState({
@@ -250,7 +227,7 @@ class App extends Component {
       })
   }
 
-  handleDelete(e) {
+  handleItemsDelete(e) {
     for (var i = 0; i < this.state.items.length; i++) {
       let id = this.state.items[i]._id.$oid;
       axios.delete('https://api.mlab.com/api/1/databases/expense-tracker/collections/items/' + id + '?apiKey=1W1tqvCxoGyGvyM0tDQ2AipLCiFzEAS5')
@@ -261,12 +238,48 @@ class App extends Component {
     }
   }
 
+  newItem () {
+    this.setState({
+      newItem: true,
+      metrics: false
+    })
+  }
+
+  metrics () {
+    if (this.state.metricsTotals.length === 0 && this.state.totalDates.length === 0 ) {
+      for (var i = 0; i < this.state.totals.length; i++) {
+        this.state.metricsTotals.push(this.state.totals[i].total)
+        this.state.totalDates.push(this.state.totals[i].totalDate)
+      }
+      for (var i = 0; i < this.state.items.length; i++) {
+        if (this.state.items[i].subtraction === true) {
+          this.state.itemsSubtracted += 1;
+        }
+        else if (this.state.items[i].subtraction === false) {
+          this.state.itemsAdded += 1;
+        }
+      }
+    }
+
+    console.log(this.state);
+    this.setState({
+      metrics: true,
+      newItem: false
+    })
+  }
+
+  home () {
+    this.setState({
+      metrics: false,
+      newItem: false
+    })
+  }
   render() {
     const totalData = {
         labels: this.state.totalDates,
         datasets: [{
           label: 'Total Money',
-          data: this.state.totals,
+          data: this.state.metricsTotals,
           backgroundColor: [],
           borderColor: 'rgb(255, 99, 132)',
         }]
@@ -298,7 +311,7 @@ class App extends Component {
           </button>
 
           <div>
-            Total : ${this.state.newestTotal}
+            Total : ${localStorage.getItem( 'total' )}
           </div>
         </div>
       );
@@ -312,9 +325,9 @@ class App extends Component {
             home = {this.home}
            />
           <div>
-            Total : ${this.state.newestTotal}
+            Total : ${localStorage.getItem( 'total' )}
             <br></br>
-            <button className='ui large blue button' onClick={this.handleDelete}>
+            <button className='ui large blue button' onClick={this.handleTotalsDelete}>
               Delete Totals Data
             </button>
           </div>
@@ -361,10 +374,10 @@ class App extends Component {
             onChange={this.updatePrice.bind(this)}
           />
           <br></br>
-          <button className='ui large blue button' onClick={this.handleItemSubmit}>
+          <button className='ui large blue button' onClick={this.handleNewItemSubmit}>
             Submit
           </button>
-          <button className='ui large blue button' onClick={this.handleDelete}>
+          <button className='ui large blue button' onClick={this.handleItemsDelete}>
             Delete All Data
           </button>
           <br></br>
@@ -414,6 +427,9 @@ class App extends Component {
               </div>
             </div>
           </div>
+          <br></br>
+          <br></br>
+            Total : ${localStorage.getItem( 'total' )}
         </div>
 
        )
