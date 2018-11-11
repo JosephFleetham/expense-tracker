@@ -8,45 +8,26 @@ class TopNav extends Component {
   constructor(props) {
       super(props);
       this.state = {
-        newestTotal: 0,
-        totals: [],
-        items: []
+        newestTotal: this.props.newestTotal,
+        totals: this.props.totals,
+        items: this.props.items
       };
       this.checkState = this.checkState.bind(this);
-      this.updateState = this.updateState.bind(this);
+      // this.updateState = this.updateState.bind(this);
   }
 
-  getItems() {
-    getItemData().then((items) => {
-      this.setState({ items });
-      console.log("items", this.state.items);
-    });
 
-  }
-
-  getTotals() {
-    getTotalData().then((totals) => {
-      this.setState({ totals });
-      this.setState({
-        newestTotal : this.state.totals[this.state.totals.length - 1].total
-      })
-      console.log(this.state.totals);
-      localStorage.setItem( 'total', this.state.totals[this.state.totals.length - 1].total )
-    });
-  }
 
   componentWillMount () {
-    this.getItems();
-    this.getTotals();
   }
 
   componentDidMount () {
-
+    console.log("topnav props", this.props);
+    console.log("topnav state", this.state);
   }
 
   checkState(e) {
-    console.log(this.state);
-    console.log("TopNav props", this.props);
+
   }
 
   updateState () {
@@ -56,43 +37,15 @@ class TopNav extends Component {
   render() {
     return (
       <div>
-        <Link to ={{
-          pathname: "/",
-          state: {
-              newestTotal: this.state.newestTotal
-          }
-        }}>
-          <button className='ui large blue button' onClick={this.setTotal}>
+          <button className='ui large blue button' onClick={this.props.home}>
             Home
           </button>
-        </Link>
-        <Link to ={{
-          pathname: "/newitem",
-          state: {
-              newestTotal: this.state.newestTotal,
-              items : this.state.items,
-              totals: this.state.totals,
-          }
-        }}>
-          <button className='ui large blue button' onClick={this.updateState}>
+          <button className='ui large blue button' onClick={this.props.newItem}>
             New Item
           </button>
-        </Link>
-        <Link to ={{
-          pathname: "/metrics",
-          state: {
-              newestTotal: this.state.newestTotal,
-              items: this.state.items,
-              totals: this.state.totals
-          }
-        }}>
-          <button className='ui large blue button' onClick={this.someshit}>
+          <button className='ui large blue button' onClick={this.props.metrics}>
             Metrics
           </button>
-        </Link>
-        <button className='ui large blue button' onClick={this.checkState}>
-          Check State
-        </button>
       </div>
     )
   }

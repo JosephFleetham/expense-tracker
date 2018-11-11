@@ -5,8 +5,6 @@ import './index.css';
 import App from './components/App.js';
 import { Router, Route, IndexRoute, BrowserRouter, Switch} from 'react-router-dom'
 import * as serviceWorker from './serviceWorker';
-import NewItem from './components/NewItem.js';
-import Metrics from './components/Metrics.js';
 
 
 
@@ -14,8 +12,6 @@ render((
   <BrowserRouter>
       <Switch>
         <Route exact path='/' component={App}/>
-        <Route path='/newitem' component={NewItem}/>
-        <Route path='/metrics' component={Metrics}/>
       </Switch>
   </BrowserRouter>
 ), document.getElementById('root'));
