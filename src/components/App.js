@@ -16,12 +16,14 @@ class App extends Component {
         newestTotal: null,
         newItem: false,
         metrics: false,
-        subtractionSelected: false,
-        additionSelected: false,
+        subtractionSelected: null,
+        additionSelected: null,
         metricsTotals: [],
         totalDates: [],
         itemsAdded: 0,
-        itemsSubtracted: 0
+        itemsSubtracted: 0,
+        fields: {}
+
       };
       this.handleSubmit = this.handleSubmit.bind(this);
       this.handleTotalSubmit = this.handleTotalSubmit.bind(this);
@@ -36,6 +38,9 @@ class App extends Component {
       this.newItem = this.newItem.bind(this);
       this.getItems = this.getItems.bind(this);
       this.home = this.home.bind(this);
+      this.handleItemValidation = this.handleItemValidation.bind(this);
+      this.handleTotalValidation = this.handleTotalValidation.bind(this);
+
   }
 
   getItems() {
@@ -74,14 +79,18 @@ class App extends Component {
 
   handleSubmit(e) {
     console.log("bank", this.state.bank);
+    this.handleTotalValidation();
     var date = new Date();
     let total = this.state.bank;
+    if (!total) {
+      return
+    }
     let totalDate = (date.getMonth() + 1) + '/' + date.getDate() + '/' +  date.getFullYear()
     localStorage.setItem( 'total', this.state.bank )
     this.handleTotalSubmit({ total: total, totalDate: totalDate });
-    // this.setState({
-    //   total: Number(this.state.bank)
-    // });
+    this.setState({
+      total: Number(this.state.bank)
+    });
   }
 
   handleTotalSubmit(item) {
@@ -95,11 +104,13 @@ class App extends Component {
       this.setState({
         newestTotal : this.state.data.data.total
       })
+      this.state.totals.push(item);
       console.log(this.state.newestTotal);
     })
       .catch(err => {
         console.error(err);
       });
+
   }
 
 
@@ -123,7 +134,7 @@ class App extends Component {
   }
 
   toggleAddition () {
-    if (this.state.additionSelected === false) {
+    if (this.state.additionSelected === false || (this.state.subtractionSelected === null && this.state.additionSelected === null)) {
       this.setState({
         additionSelected: true,
         subtractionSelected: false
@@ -132,7 +143,7 @@ class App extends Component {
   }
 
   toggleSubtraction () {
-    if (this.state.subtractionSelected === false) {
+    if (this.state.subtractionSelected === false || (this.state.subtractionSelected === null && this.state.additionSelected === null)) {
       this.setState({
         subtractionSelected: true,
         additionSelected: false
@@ -162,18 +173,23 @@ class App extends Component {
   }
 
   handleNewItemSubmit(e) {
+    e.preventDefault();
     console.log("submit state", this.state);
+    this.handleItemValidation();
     var date = new Date();
     let id = this.state.items.length + 1;
-    let type = this.state.type.trim();
-    let note = this.state.note.trim();
+    let type = this.state.type;
+    let note = this.state.note;
     let subtraction = this.state.subtractionSelected;
     let price = this.state.price;
     let itemDate = (date.getMonth() + 1) + '/' + date.getDate() + '/' +  date.getFullYear()
+    if (!price || !type || (this.state.subtractionSelected === null && this.state.additionSelected === null)) {
+      return this.refs.type.value = 'ERROR', this.refs.note.value = 'ERROR', this.refs.price.value = 'ERROR';
+    }
+    this.handleItemAPISubmit({ id: id, type: type, note: note, subtraction: subtraction, price: price, itemDate: itemDate});
     this.refs.type.value = '';
     this.refs.note.value = '';
     this.refs.price.value = '';
-    this.handleItemAPISubmit({ id: id, type: type, note: note, subtraction: subtraction, price: price, itemDate: itemDate});
 
   }
 
@@ -197,14 +213,14 @@ class App extends Component {
       });
     if (this.state.subtractionSelected === true) {
       this.setState({
-        total: this.state.newestTotal - this.state.price,
+        newestTotal: this.state.newestTotal - this.state.price,
       })
       var total = this.state.newestTotal - this.state.price;
       localStorage.setItem( 'total', total )
     }
     else if (this.state.subtractionSelected === false) {
       this.setState({
-        total: this.state.newestTotal + this.state.price,
+        newestTotal: this.state.newestTotal + this.state.price,
       })
       var total = this.state.newestTotal + this.state.price;
       localStorage.setItem( 'total', total )
@@ -238,6 +254,68 @@ class App extends Component {
     }
   }
 
+  handleItemValidation () {
+    let fields = this.state.fields;
+    let errors = {};
+    let formIsValid = true;
+
+     //Name
+     if(this.state.subtractionSelected === null && this.state.additionSelected === null){
+       formIsValid = false;
+       errors["subtraction"] = "Must select addition or subtraction";
+     }
+
+    if(!fields["type"]){
+      formIsValid = false;
+      errors["type"] = "Enter Valid Type";
+    }
+
+    if(typeof fields["type"] !== "undefined"){
+      if(!fields["type"].match(/^[a-zA-Z]+$/)){
+        formIsValid = false;
+          errors["type"] = "Only letters and numbers";
+      }
+    }
+
+    if(!fields["price"]){
+      formIsValid = false;
+      errors["price"] = "Enter Valid Price";
+    }
+
+    if(typeof fields["price"] !== "undefined"){
+      if(!fields["price"].match(/^[0-9]*$/)){
+        formIsValid = false;
+          errors["price"] = "Only numbers";
+      }
+    }
+
+    this.setState({errors: errors});
+    console.log(this.state.errors)
+    return formIsValid;
+  }
+
+  handleTotalValidation () {
+    let fields = this.state.fields;
+    let errors = {};
+    let formIsValid = true;
+
+    if(!fields["total"]){
+      formIsValid = false;
+      errors["total"] = "Enter Valid Total";
+    }
+
+    if(typeof fields["total"] !== "undefined"){
+      if(!fields["total"].match(/^[0-9]*$/)){
+        formIsValid = false;
+          errors["total"] = "Only numbers";
+      }
+    }
+
+    this.setState({errors: errors});
+    console.log(this.state.errors)
+    return formIsValid;
+  }
+
   newItem () {
     this.setState({
       newItem: true,
@@ -246,11 +324,13 @@ class App extends Component {
   }
 
   metrics () {
-    if (this.state.metricsTotals.length === 0 && this.state.totalDates.length === 0 ) {
-      for (var i = 0; i < this.state.totals.length; i++) {
+    for (var i = 0; i < this.state.totals.length; i++) {
+      if (this.state.metricsTotals[i] != this.state.totals[i].total) {
         this.state.metricsTotals.push(this.state.totals[i].total)
         this.state.totalDates.push(this.state.totals[i].totalDate)
       }
+    }
+    if (this.state.items.length != 0) {
       for (var i = 0; i < this.state.items.length; i++) {
         if (this.state.items[i].subtraction === true) {
           this.state.itemsSubtracted += 1;
@@ -260,6 +340,7 @@ class App extends Component {
         }
       }
     }
+
 
     console.log(this.state);
     this.setState({
@@ -305,6 +386,7 @@ class App extends Component {
             ref="total"
             placeholder="Enter..."
             onChange={this.updateTotalValue.bind(this)}
+            value={this.state.fields["total"]}
           />
           <button className='ui large blue button' onClick={this.handleSubmit}>
             Set Initial Amount
@@ -358,6 +440,7 @@ class App extends Component {
             ref="type"
             placeholder="Enter type..."
             onChange={this.updateType.bind(this)}
+            value={this.state.fields["type"]}
           />
           <br></br>
           <input
@@ -365,6 +448,8 @@ class App extends Component {
             ref="note"
             placeholder="Enter note..."
             onChange={this.updateNote.bind(this)}
+
+
           />
           <br></br>
           <input
@@ -372,6 +457,7 @@ class App extends Component {
             ref="price"
             placeholder="Enter price..."
             onChange={this.updatePrice.bind(this)}
+            value={this.state.fields["price"]}
           />
           <br></br>
           <button className='ui large blue button' onClick={this.handleNewItemSubmit}>
