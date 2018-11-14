@@ -4,7 +4,8 @@ import TopNav from './TopNav.js';
 import axios from 'axios';
 import { getItemData, deleteData, getTotalData } from '../utils/expense-tracker-api';
 import {Line, Bar} from 'react-chartjs-2';
-import { Grid, Segment, Divider } from 'semantic-ui-react';
+import { Grid, Segment, Divider, Dropdown, Select, Input } from 'semantic-ui-react';
+
 
 class App extends Component {
   constructor() {
@@ -22,7 +23,9 @@ class App extends Component {
         totalDates: [],
         itemsAdded: 0,
         itemsSubtracted: 0,
-        fields: {}
+        fields: {},
+        types: [],
+        type: ''
 
       };
       this.handleSubmit = this.handleSubmit.bind(this);
@@ -40,13 +43,18 @@ class App extends Component {
       this.home = this.home.bind(this);
       this.handleItemValidation = this.handleItemValidation.bind(this);
       this.handleTotalValidation = this.handleTotalValidation.bind(this);
+      this.renderTypeOptions = this.renderTypeOptions.bind(this);
 
   }
 
   getItems() {
     getItemData().then((items) => {
       this.setState({ items });
+      for (var i = 0; i < this.state.items.length; i++) {
+        this.state.types.push(this.state.items[i].type)
+      }
       console.log("API items", this.state.items);
+      console.log("types state", this.state.types)
     });
 
   }
@@ -140,6 +148,7 @@ class App extends Component {
         subtractionSelected: false
       })
     }
+    this.renderTypeOptions();
   }
 
   toggleSubtraction () {
@@ -152,6 +161,7 @@ class App extends Component {
   }
 
   updateType (evt) {
+
     this.setState({
       type: evt.target.value
     })
@@ -162,14 +172,14 @@ class App extends Component {
     this.setState({
       note: evt.target.value
     })
-    console.log(this.state.type);
+    console.log(this.state.note);
   }
 
   updatePrice (evt) {
     this.setState({
       price: Number(evt.target.value)
     })
-    console.log(this.state.type);
+    console.log(this.state.price);
   }
 
   handleNewItemSubmit(e) {
@@ -184,10 +194,13 @@ class App extends Component {
     let price = this.state.price;
     let itemDate = (date.getMonth() + 1) + '/' + date.getDate() + '/' +  date.getFullYear()
     if (!price || !type || (this.state.subtractionSelected === null && this.state.additionSelected === null)) {
-      return this.refs.type.value = 'ERROR', this.refs.note.value = 'ERROR', this.refs.price.value = 'ERROR';
+      return this.refs.note.value = 'ERROR', this.refs.price.value = 'ERROR';
     }
+    this.state.types.push(type);
     this.handleItemAPISubmit({ id: id, type: type, note: note, subtraction: subtraction, price: price, itemDate: itemDate});
-    this.refs.type.value = '';
+    this.setState({
+      type: ''
+    })
     this.refs.note.value = '';
     this.refs.price.value = '';
 
@@ -355,7 +368,25 @@ class App extends Component {
       newItem: false
     })
   }
+
+  renderTypeOptions () {
+    var options = [];
+    for (var i=0;i<this.state.types.length;i++) {
+      options.push(
+        {
+          text: this.state.types[i],
+          value: this.state.types[i],
+        }
+      )
+    }
+    return (
+      options
+    )
+  }
+
   render() {
+    // const types = this.state.types.map((type) => <option key={type.value} value={team.value}>{team.display}</option>)}
+    // ));
     const totalData = {
         labels: this.state.totalDates,
         datasets: [{
@@ -435,12 +466,13 @@ class App extends Component {
             </label>
           </div>
           <br></br>
-          <input
-            type="type"
-            ref="type"
-            placeholder="Enter type..."
-            onChange={this.updateType.bind(this)}
-            value={this.state.fields["type"]}
+          <Select
+            placeholder={this.state.type === '' ? "Enter Type" : this.state.type}
+            fluid
+            options={this.renderTypeOptions()}
+            search
+            selection
+            onSearchChange={this.updateType.bind(this)}
           />
           <br></br>
           <input
