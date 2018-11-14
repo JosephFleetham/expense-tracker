@@ -466,7 +466,7 @@ class App extends Component {
             </label>
           </div>
           <br></br>
-          <Select
+          <Dropdown
             placeholder={this.state.type === '' ? "Enter Type" : this.state.type}
             fluid
             options={this.renderTypeOptions()}
