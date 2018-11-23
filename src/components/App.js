@@ -377,21 +377,20 @@ class App extends Component {
     var arr = this.state.types.filter(function(el) {
       if (dups.indexOf(el) == -1) {
         dups.push(el);
-        return true;
+        console.log("dupes", dups);
       }
-
-      return false;
 
     });
     var options = [];
-    for (var i=0;i<arr.length;i++) {
+    for (var i=0;i<dups.length;i++) {
       options.push(
         {
-          text: arr[i],
-          value: arr[i],
+          text: dups[i],
+          value: dups[i],
         }
       )
     }
+    console.log(options);
     return options;
   }
 
