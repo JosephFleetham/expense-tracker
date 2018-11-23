@@ -203,7 +203,7 @@ class App extends Component {
     })
     this.refs.note.value = '';
     this.refs.price.value = '';
-
+    console.log(this.state.types);
   }
 
 
@@ -265,6 +265,9 @@ class App extends Component {
           console.log(res.data);
         })
     }
+    this.setState({
+      types: []
+    });
   }
 
   handleItemValidation () {
@@ -370,18 +373,26 @@ class App extends Component {
   }
 
   renderTypeOptions () {
+    var dups = [];
+    var arr = this.state.types.filter(function(el) {
+      if (dups.indexOf(el) == -1) {
+        dups.push(el);
+        return true;
+      }
+
+      return false;
+
+    });
     var options = [];
-    for (var i=0;i<this.state.types.length;i++) {
+    for (var i=0;i<arr.length;i++) {
       options.push(
         {
-          text: this.state.types[i],
-          value: this.state.types[i],
+          text: arr[i],
+          value: arr[i],
         }
       )
     }
-    return (
-      options
-    )
+    return options;
   }
 
   render() {
