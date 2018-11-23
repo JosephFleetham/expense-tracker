@@ -4,7 +4,7 @@ import TopNav from './TopNav.js';
 import axios from 'axios';
 import { getItemData, deleteData, getTotalData } from '../utils/expense-tracker-api';
 import {Line, Bar} from 'react-chartjs-2';
-import { Grid, Segment, Divider, Dropdown, Select, Input } from 'semantic-ui-react';
+import { Grid, Segment, Divider, Dropdown, Select, Input, Ref } from 'semantic-ui-react';
 
 
 class App extends Component {
@@ -44,6 +44,7 @@ class App extends Component {
       this.handleItemValidation = this.handleItemValidation.bind(this);
       this.handleTotalValidation = this.handleTotalValidation.bind(this);
       this.renderTypeOptions = this.renderTypeOptions.bind(this);
+      this.myRef = React.createRef();
 
   }
 
@@ -148,7 +149,6 @@ class App extends Component {
         subtractionSelected: false
       })
     }
-    this.renderTypeOptions();
   }
 
   toggleSubtraction () {
@@ -161,11 +161,16 @@ class App extends Component {
   }
 
   updateType (evt) {
-
     this.setState({
       type: evt.target.value
     })
     console.log(this.state.type);
+  }
+
+  handleChange(e) {
+    this.setState({
+      type: e.target.innerText
+    })
   }
 
   updateNote (evt) {
@@ -337,6 +342,7 @@ class App extends Component {
       newItem: true,
       metrics: false
     })
+    this.renderTypeOptions()
   }
 
   metrics () {
@@ -379,7 +385,6 @@ class App extends Component {
         dups.push(el);
         console.log("dupes", dups);
       }
-
     });
     var options = [];
     for (var i=0;i<dups.length;i++) {
@@ -391,12 +396,17 @@ class App extends Component {
       )
     }
     console.log(options);
-    return options;
+    this.setState({
+      options: options
+    });
+    this.setState({
+      dups: dups
+    });
   }
 
+
+
   render() {
-    // const types = this.state.types.map((type) => <option key={type.value} value={team.value}>{team.display}</option>)}
-    // ));
     const totalData = {
         labels: this.state.totalDates,
         datasets: [{
@@ -477,12 +487,14 @@ class App extends Component {
           </div>
           <br></br>
           <Dropdown
+            ref="type"
             placeholder={this.state.type === '' ? "Enter Type" : this.state.type}
             fluid
-            options={this.renderTypeOptions()}
+            options={this.state.options}
             search
             selection
             onSearchChange={this.updateType.bind(this)}
+            onChange={this.handleChange.bind(this)}
           />
           <br></br>
           <input
