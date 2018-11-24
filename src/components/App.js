@@ -25,7 +25,9 @@ class App extends Component {
         itemsSubtracted: 0,
         fields: {},
         types: [],
-        type: ''
+        type: '',
+        newType: '',
+        selectionFromDropdown: false
 
       };
       this.handleSubmit = this.handleSubmit.bind(this);
@@ -54,6 +56,7 @@ class App extends Component {
       for (var i = 0; i < this.state.items.length; i++) {
         this.state.types.push(this.state.items[i].type)
       }
+      this.state.types.splice(0, 0, "Select Type");
       console.log("API items", this.state.items);
       console.log("types state", this.state.types)
     });
@@ -160,17 +163,55 @@ class App extends Component {
     }
   }
 
-  updateType (evt) {
+  updateNewType (e) {
     this.setState({
-      type: evt.target.value
+      newType: e.target.value,
+      selectionFromDropdown: false
     })
-    console.log(this.state.type);
+
+    console.log('ref searchQuery', this.refs.type.state.searchQuery);
   }
 
-  handleChange(e) {
+  handleTypeSelection(e) {
     this.setState({
-      type: e.target.innerText
+      type: e.target.innerText,
+      selectionFromDropdown: true
     })
+   console.log('ref value', e.target);
+
+  }
+
+  handleDropdownClick () {
+    // this.setState({
+    //   type: ''
+    // })
+  }
+
+  wow () {
+    this.refs.type.state.searchQuery = this.state.type;
+    this.refs.type.state.value = this.state.type;
+  }
+
+  handleOnClick () {
+    console.log(this.refs.type);
+    if (this.state.selectionFromDropdown === false) {
+      this.setState({
+        type: this.state.newType
+      })
+    }
+    this.wow.bind(this);
+
+
+    // else if (this.state.selectionFromDropdown === true) {
+    //   this.setState({
+    //     newType: ''
+    //   })
+    // }
+    // console.log("ref state", this.refs.type);
+    console.log('newType', this.state.newType);
+    console.log("type", this.state.type);
+    console.log("selectionFromDropdown", this.state.selectionFromDropdown);
+
   }
 
   updateNote (evt) {
@@ -204,10 +245,14 @@ class App extends Component {
     this.state.types.push(type);
     this.handleItemAPISubmit({ id: id, type: type, note: note, subtraction: subtraction, price: price, itemDate: itemDate});
     this.setState({
-      type: ''
+      type: '',
+      newType: ''
     })
     this.refs.note.value = '';
     this.refs.price.value = '';
+    this.refs.type.state.searchQuery = this.refs.type.props.placeholder;
+    this.refs.type.state.value = this.refs.type.props.placeholder;
+    this.renderTypeOptions();
     console.log(this.state.types);
   }
 
@@ -367,14 +412,18 @@ class App extends Component {
     console.log(this.state);
     this.setState({
       metrics: true,
-      newItem: false
+      newItem: false,
+      type: '',
+      newType: ''
     })
   }
 
   home () {
     this.setState({
       metrics: false,
-      newItem: false
+      newItem: false,
+      type: '',
+      newType: ''
     })
   }
 
@@ -486,15 +535,29 @@ class App extends Component {
             </label>
           </div>
           <br></br>
+          <input
+            type="type"
+            ref="type"
+            placeholder="Enter new type..."
+            // onChange={this.updateNote.bind(this)}
+            // onClick={this.handleOnClick.bind(this)}
+
+          />
+          <select>
+            {this.state.types.map(function (n) {
+              return ([(<option value="volvo">{n}</option>)]);
+            })}
+          </select>
           <Dropdown
             ref="type"
-            placeholder={this.state.type === '' ? "Enter Type" : this.state.type}
+            placeholder={(this.state.type === '' && this.state.newType === '') ? "Enter Type" : this.state.type}
             fluid
             options={this.state.options}
             search
             selection
-            onSearchChange={this.updateType.bind(this)}
-            onChange={this.handleChange.bind(this)}
+            onSearchChange={this.updateNewType.bind(this)}
+            onChange={this.handleTypeSelection.bind(this)}
+            onClick={this.handleDropdownClick.bind(this)}
           />
           <br></br>
           <input
@@ -502,6 +565,7 @@ class App extends Component {
             ref="note"
             placeholder="Enter note..."
             onChange={this.updateNote.bind(this)}
+            onClick={this.handleOnClick.bind(this)}
 
 
           />
@@ -512,6 +576,7 @@ class App extends Component {
             placeholder="Enter price..."
             onChange={this.updatePrice.bind(this)}
             value={this.state.fields["price"]}
+            onClick={this.handleOnClick.bind(this)}
           />
           <br></br>
           <button className='ui large blue button' onClick={this.handleNewItemSubmit}>
