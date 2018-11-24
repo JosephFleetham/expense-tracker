@@ -224,7 +224,7 @@ class App extends Component {
     let price = this.state.price;
     let itemDate = (date.getMonth() + 1) + '/' + date.getDate() + '/' +  date.getFullYear()
     if (!price || !type || (this.state.subtractionSelected === null && this.state.additionSelected === null)) {
-      return this.refs.note.value = 'ERROR', this.refs.price.value = 'ERROR', this.refs.type.value = 'ERROR';
+      return this.refs.note.value = 'ERROR', this.refs.price.value = 'ERROR', this.refs.newType.value = 'ERROR';
     }
     this.state.types.push(type);
     this.handleItemAPISubmit({ id: id, type: type, note: note, subtraction: subtraction, price: price, itemDate: itemDate});
@@ -315,15 +315,15 @@ class App extends Component {
        errors["subtraction"] = "Must select addition or subtraction";
      }
 
-    if(!fields["type"]){
+    if(!fields["newType"]){
       formIsValid = false;
-      errors["type"] = "Enter Valid Type";
+      errors["newType"] = "Enter Valid Type";
     }
 
-    if(typeof fields["type"] !== "undefined"){
-      if(!fields["type"].match(/^[a-zA-Z]+$/)){
+    if(typeof fields["newType"] !== "undefined"){
+      if(!fields["newType"].match(/^[a-zA-Z]+$/)){
         formIsValid = false;
-          errors["type"] = "Only letters and numbers";
+          errors["newType"] = "Only letters and numbers";
       }
     }
 
