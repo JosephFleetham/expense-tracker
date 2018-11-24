@@ -27,7 +27,6 @@ class App extends Component {
         types: [],
         type: '',
         newType: '',
-        selectionFromDropdown: false
 
       };
       this.handleSubmit = this.handleSubmit.bind(this);
@@ -46,7 +45,6 @@ class App extends Component {
       this.handleItemValidation = this.handleItemValidation.bind(this);
       this.handleTotalValidation = this.handleTotalValidation.bind(this);
       this.renderTypeOptions = this.renderTypeOptions.bind(this);
-      this.myRef = React.createRef();
 
   }
 
@@ -163,56 +161,42 @@ class App extends Component {
     }
   }
 
-  updateNewType (e) {
-    this.setState({
-      newType: e.target.value,
-      selectionFromDropdown: false
-    })
+  handleNewType (e) {
+    if (this.state.type === '') {
+      this.setState({
+        newType: e.target.value,
+      })
+    }
+    else {
+      this.setState({
+        newType: e.target.value,
+        type: ''
+      })
+    this.refs.type.value = "Select Type"
+    }
 
-    console.log('ref searchQuery', this.refs.type.state.searchQuery);
+
+   console.log('type', this.state.type);
+   console.log('newType',this.state.newType);
   }
 
   handleTypeSelection(e) {
-    this.setState({
-      type: e.target.innerText,
-      selectionFromDropdown: true
-    })
-   console.log('ref value', e.target);
-
-  }
-
-  handleDropdownClick () {
-    // this.setState({
-    //   type: ''
-    // })
-  }
-
-  wow () {
-    this.refs.type.state.searchQuery = this.state.type;
-    this.refs.type.state.value = this.state.type;
-  }
-
-  handleOnClick () {
-    console.log(this.refs.type);
-    if (this.state.selectionFromDropdown === false) {
+    if (this.state.newType === '') {
       this.setState({
-        type: this.state.newType
+        type: e.target.value,
       })
     }
-    this.wow.bind(this);
-
-
-    // else if (this.state.selectionFromDropdown === true) {
-    //   this.setState({
-    //     newType: ''
-    //   })
-    // }
-    // console.log("ref state", this.refs.type);
-    console.log('newType', this.state.newType);
-    console.log("type", this.state.type);
-    console.log("selectionFromDropdown", this.state.selectionFromDropdown);
-
+    else {
+      this.setState({
+        type: e.target.value,
+        newType: ''
+      })
+      this.refs.newType.value = '';
+    }
+   console.log('type', this.state.type);
+   console.log('newType', this.state.newType);
   }
+
 
   updateNote (evt) {
     this.setState({
@@ -234,13 +218,13 @@ class App extends Component {
     this.handleItemValidation();
     var date = new Date();
     let id = this.state.items.length + 1;
-    let type = this.state.type;
+    let type = this.state.type === '' ? this.state.newType : this.state.type;
     let note = this.state.note;
     let subtraction = this.state.subtractionSelected;
     let price = this.state.price;
     let itemDate = (date.getMonth() + 1) + '/' + date.getDate() + '/' +  date.getFullYear()
     if (!price || !type || (this.state.subtractionSelected === null && this.state.additionSelected === null)) {
-      return this.refs.note.value = 'ERROR', this.refs.price.value = 'ERROR';
+      return this.refs.note.value = 'ERROR', this.refs.price.value = 'ERROR', this.refs.type.value = 'ERROR';
     }
     this.state.types.push(type);
     this.handleItemAPISubmit({ id: id, type: type, note: note, subtraction: subtraction, price: price, itemDate: itemDate});
@@ -250,8 +234,8 @@ class App extends Component {
     })
     this.refs.note.value = '';
     this.refs.price.value = '';
-    this.refs.type.state.searchQuery = this.refs.type.props.placeholder;
-    this.refs.type.state.value = this.refs.type.props.placeholder;
+    this.refs.type.value = '';
+    this.refs.newType.value = '';
     this.renderTypeOptions();
     console.log(this.state.types);
   }
@@ -536,36 +520,31 @@ class App extends Component {
           </div>
           <br></br>
           <input
-            type="type"
-            ref="type"
+            type="newType"
+            ref="newType"
             placeholder="Enter new type..."
+            onChange={this.handleNewType.bind(this)}
             // onChange={this.updateNote.bind(this)}
             // onClick={this.handleOnClick.bind(this)}
 
           />
-          <select>
-            {this.state.types.map(function (n) {
-              return ([(<option value="volvo">{n}</option>)]);
+          &nbsp; Or &nbsp;
+          <select
+            type="type"
+            ref="type"
+            onChange={this.handleTypeSelection.bind(this)}
+          >
+            {
+              this.state.types.map(function (n) {
+              return ([(<option value={n}>{n}</option>)]);
             })}
           </select>
-          <Dropdown
-            ref="type"
-            placeholder={(this.state.type === '' && this.state.newType === '') ? "Enter Type" : this.state.type}
-            fluid
-            options={this.state.options}
-            search
-            selection
-            onSearchChange={this.updateNewType.bind(this)}
-            onChange={this.handleTypeSelection.bind(this)}
-            onClick={this.handleDropdownClick.bind(this)}
-          />
           <br></br>
           <input
             type="note"
             ref="note"
             placeholder="Enter note..."
             onChange={this.updateNote.bind(this)}
-            onClick={this.handleOnClick.bind(this)}
 
 
           />
@@ -576,7 +555,6 @@ class App extends Component {
             placeholder="Enter price..."
             onChange={this.updatePrice.bind(this)}
             value={this.state.fields["price"]}
-            onClick={this.handleOnClick.bind(this)}
           />
           <br></br>
           <button className='ui large blue button' onClick={this.handleNewItemSubmit}>
