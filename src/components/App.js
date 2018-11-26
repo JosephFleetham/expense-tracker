@@ -3,7 +3,7 @@ import { Link, BrowserRouter } from 'react-router-dom';
 import TopNav from './TopNav.js';
 import axios from 'axios';
 import { getItemData, deleteData, getTotalData } from '../utils/expense-tracker-api';
-import {Line, Bar} from 'react-chartjs-2';
+import {Line, Bar, Pie} from 'react-chartjs-2';
 import { Grid, Segment, Divider, Dropdown, Select, Input, Ref } from 'semantic-ui-react';
 
 
@@ -44,7 +44,7 @@ class App extends Component {
       this.home = this.home.bind(this);
       this.handleItemValidation = this.handleItemValidation.bind(this);
       this.handleTotalValidation = this.handleTotalValidation.bind(this);
-      this.renderTypeOptions = this.renderTypeOptions.bind(this);
+      this.noDupsTypes = this.noDupsTypes.bind(this);
 
   }
 
@@ -55,6 +55,8 @@ class App extends Component {
         this.state.types.push(this.state.items[i].type)
       }
       this.state.types.splice(0, 0, "Select Type");
+      this.noDupsTypes();
+
       console.log("API items", this.state.items);
       console.log("types state", this.state.types)
     });
@@ -81,7 +83,6 @@ class App extends Component {
   }
 
   componentDidMount () {
-
     console.log("Initial state", this.state);
   }
 
@@ -234,9 +235,9 @@ class App extends Component {
     })
     this.refs.note.value = '';
     this.refs.price.value = '';
-    this.refs.type.value = '';
+    this.refs.type.value = this.state.types[0];
     this.refs.newType.value = '';
-    this.renderTypeOptions();
+    this.noDupsTypes();
     console.log(this.state.types);
   }
 
@@ -371,7 +372,7 @@ class App extends Component {
       newItem: true,
       metrics: false
     })
-    this.renderTypeOptions()
+    this.noDupsTypes()
   }
 
   metrics () {
@@ -391,6 +392,40 @@ class App extends Component {
         }
       }
     }
+    var sortedTypes = this.state.types.sort();
+    var types = [], counts = [], prev;
+
+    for ( var i = 0; i < sortedTypes.length; i++ ) {
+        if ( sortedTypes[i] !== prev ) {
+            types.push(sortedTypes[i]);
+            counts.push(1);
+        }
+        else {
+            counts[counts.length-1]++;
+        }
+        prev = sortedTypes[i];
+    }
+
+    console.log([types, counts]);
+
+    console.log("noDups", this.state.noDups);
+    var typesAndCount = [];
+    for (var i = 0; i < types.length; i++) {
+      typesAndCount.push(
+        {
+          label: types[i],
+          data: counts[i],
+          backgroundColor: [],
+          borderColor: 'rgb('+ Math.floor((Math.random() * 900) + 1) + ', '+Math.floor((Math.random() * 900) + 1)+', '+Math.floor((Math.random() * 900) + 1)+')',
+        }
+      );
+    }
+    // var array = Object.assign({}, typesAndCount);
+    // console.log(array);
+    // console.log(Object.values(array));
+    this.setState({
+      typesAndCount: typesAndCount
+    });
 
 
     console.log(this.state);
@@ -411,35 +446,26 @@ class App extends Component {
     })
   }
 
-  renderTypeOptions () {
-    var dups = [];
+  noDupsTypes () {
+    var noDups = [];
     var arr = this.state.types.filter(function(el) {
-      if (dups.indexOf(el) == -1) {
-        dups.push(el);
-        console.log("dupes", dups);
+      if (noDups.indexOf(el) == -1) {
+        noDups.push(el);
+        console.log("noDups", noDups);
       }
     });
-    var options = [];
-    for (var i=0;i<dups.length;i++) {
-      options.push(
-        {
-          text: dups[i],
-          value: dups[i],
-        }
-      )
-    }
-    console.log(options);
     this.setState({
-      options: options
-    });
-    this.setState({
-      dups: dups
+      noDups: noDups
     });
   }
 
 
 
   render() {
+    const typeData = {
+      labels: this.state.noDups,
+      datasets: [this.state.typesAndCount]
+    }
     const totalData = {
         labels: this.state.totalDates,
         datasets: [{
@@ -534,10 +560,10 @@ class App extends Component {
             ref="type"
             onChange={this.handleTypeSelection.bind(this)}
           >
-            {
-              this.state.types.map(function (n) {
-              return ([(<option value={n}>{n}</option>)]);
-            })}
+          {
+            this.state.noDups.map(function (n) {
+            return ([(<option value={n}>{n}</option>)]);
+          })}
           </select>
           <br></br>
           <input
@@ -606,7 +632,12 @@ class App extends Component {
                     />
               </div>
               <div class="column">
-
+              <h1> Divison by item type</h1>
+                  <Pie
+                    data={typeData}
+                    width={20}
+                    height={10}
+                  />
               </div>
             </div>
           </div>
