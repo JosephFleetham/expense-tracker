@@ -54,7 +54,6 @@ class App extends Component {
       for (var i = 0; i < this.state.items.length; i++) {
         this.state.types.push(this.state.items[i].type)
       }
-      this.state.types.splice(0, 0, "Select Type");
       this.noDupsTypes();
 
       console.log("API items", this.state.items);
@@ -420,11 +419,11 @@ class App extends Component {
         }
       );
     }
-    // var array = Object.assign({}, typesAndCount);
-    // console.log(array);
-    // console.log(Object.values(array));
+    var array = Object.assign({}, typesAndCount);
+    console.log(array);
+    console.log();
     this.setState({
-      typesAndCount: typesAndCount
+      typesAndCount: array
     });
 
 
@@ -454,6 +453,7 @@ class App extends Component {
         console.log("noDups", noDups);
       }
     });
+    noDups.splice(0, 0, "Select Type");    
     this.setState({
       noDups: noDups
     });
