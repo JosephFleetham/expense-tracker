@@ -27,6 +27,7 @@ class App extends Component {
         types: [],
         type: '',
         newType: '',
+        metricsClicked: false
 
       };
       this.handleSubmit = this.handleSubmit.bind(this);
@@ -369,19 +370,22 @@ class App extends Component {
   newItem () {
     this.setState({
       newItem: true,
-      metrics: false
+      metrics: false,
+      itemsAdded: 0,
+      itemsSubtracted: 0
     })
     this.noDupsTypes()
   }
 
   metrics () {
+    console.log(this.state.metrics);
     for (var i = 0; i < this.state.totals.length; i++) {
       if (this.state.metricsTotals[i] != this.state.totals[i].total) {
         this.state.metricsTotals.push(this.state.totals[i].total)
         this.state.totalDates.push(this.state.totals[i].totalDate)
       }
     }
-    if (this.state.items.length != 0) {
+    if (this.state.items.length != 0 && (this.state.itemsSubtracted === 0 || this.state.itemsAdded === 0)) {
       for (var i = 0; i < this.state.items.length; i++) {
         if (this.state.items[i].subtraction === true) {
           this.state.itemsSubtracted += 1;
@@ -390,10 +394,57 @@ class App extends Component {
           this.state.itemsAdded += 1;
         }
       }
+      this.setState({
+        metrics: false
+      })
     }
     var sortedTypes = this.state.types.sort();
     var types = [], counts = [], prev;
-
+    var colors = [
+      "#00ffff",
+      "#f0ffff",
+      "#f5f5dc",
+      "#000000",
+      "#0000ff",
+      "#a52a2a",
+      "#00ffff",
+      "#00008b",
+      "#008b8b",
+      "#a9a9a9",
+      "#006400",
+      "#bdb76b",
+      "#8b008b",
+      "#556b2f",
+      "#ff8c00",
+      "#9932cc",
+      "#8b0000",
+      "#e9967a",
+      "#9400d3",
+      "#ff00ff",
+      "#ffd700",
+      "#008000",
+      "#4b0082",
+      "#f0e68c",
+      "#add8e6",
+      "#e0ffff",
+      "#90ee90",
+      "#d3d3d3",
+      "#ffb6c1",
+      "#ffffe0",
+      "#00ff00",
+      "#ff00ff",
+      "#800000",
+      "#000080",
+      "#808000",
+      "#ffa500",
+      "#ffc0cb",
+      "#800080",
+      "#800080",
+      "#ff0000",
+      "#c0c0c0",
+      "#ffffff",
+      "#ffff00"
+    ]
     for ( var i = 0; i < sortedTypes.length; i++ ) {
         if ( sortedTypes[i] !== prev ) {
             types.push(sortedTypes[i]);
@@ -405,30 +456,40 @@ class App extends Component {
         prev = sortedTypes[i];
     }
 
-    console.log([types, counts]);
+    this.setState({
+      sortedTypes: types
+    });
+
+    console.log(types, counts);
 
     console.log("noDups", this.state.noDups);
-    var typesAndCount = [];
+    var typesAndCountData =
+      {
+        data: [],
+        backgroundColor: [],
+
+      }
+    ;
+    console.log("typesAndCount", typesAndCountData);
     for (var i = 0; i < types.length; i++) {
-      typesAndCount.push(
-        {
-          label: types[i],
-          data: counts[i],
-          backgroundColor: [],
-          borderColor: 'rgb('+ Math.floor((Math.random() * 900) + 1) + ', '+Math.floor((Math.random() * 900) + 1)+', '+Math.floor((Math.random() * 900) + 1)+')',
-        }
+      typesAndCountData.data.push(
+        counts[i]
+      );
+      typesAndCountData.backgroundColor.push(
+        colors[Math.floor(Math.random()*colors.length)]
       );
     }
-    var array = Object.assign({}, typesAndCount);
-    console.log(array);
-    console.log();
-    this.setState({
-      typesAndCount: array
-    });
+    // var array = Object.assign({}, typesAndCount);
+    // console.log("result", result);
+
+    // this.setState({
+    //   typesAndCount: array
+    // });
 
 
     console.log(this.state);
     this.setState({
+      typesAndCountData: typesAndCountData,
       metrics: true,
       newItem: false,
       type: '',
@@ -441,7 +502,9 @@ class App extends Component {
       metrics: false,
       newItem: false,
       type: '',
-      newType: ''
+      newType: '',
+      itemsAdded: 0,
+      itemsSubtracted: 0
     })
   }
 
@@ -453,7 +516,7 @@ class App extends Component {
         console.log("noDups", noDups);
       }
     });
-    noDups.splice(0, 0, "Select Type");    
+    noDups.splice(0, 0, "Select Type");
     this.setState({
       noDups: noDups
     });
@@ -463,8 +526,8 @@ class App extends Component {
 
   render() {
     const typeData = {
-      labels: this.state.noDups,
-      datasets: [this.state.typesAndCount]
+      labels: this.state.sortedTypes,
+      datasets: [this.state.typesAndCountData]
     }
     const totalData = {
         labels: this.state.totalDates,
