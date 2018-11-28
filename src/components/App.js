@@ -27,7 +27,16 @@ class App extends Component {
         types: [],
         type: '',
         newType: '',
-        metricsClicked: false
+        metricsClicked: false,
+        add: [],
+        sub: [],
+        colors: [
+              "#000000 ",	    	" #993300 ",	    	 "#333300 ",	    	" #003300", 	    	 "#003366", 	    	" #000080", 	    	" #333399", 	    	 "#333333",
+              "#800000", 	    	 "#FF6600 	",    	 "#808000", 	    	 "#008000", 	    	" #008080 ",	    	 "#0000FF ",	    	" #666699", 	    	 "#808080 ",
+              "#FF0000", 	    	 "#FF9900 ",	    	" #99CC00 ",	    	 "#339966", 	    	" #33CCCC ",	    	" #3366FF", 	    	 "#800080", 	    	" #969696",
+              "#FF00FF", 	    	 "#FFCC00", 	    	 "#FFFF00", 	    	 "#00FF00", 	    	" #00FFFF", 	    	 "#00CCFF", 	    	" #993366", 	    	 "#C0C0C0 ",
+              "#FF99CC ",	    	" #FFCC99 ",	    	" #FFFF99", 	    	 "#CCFFCC ",	    	 "#CCFFFF", 	    	" #99CCFF", 	    	 "#CC99FF", 	    	" #FFFFFF"
+            ]
 
       };
       this.handleSubmit = this.handleSubmit.bind(this);
@@ -78,8 +87,17 @@ class App extends Component {
   }
 
   componentWillMount () {
-    this.getItems();
-    this.getTotals();
+
+  function shuffle(a) {
+      for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+  }
+  shuffle(this.state.colors)
+  this.getItems();
+  this.getTotals();
   }
 
   componentDidMount () {
@@ -196,6 +214,24 @@ class App extends Component {
     }
    console.log('type', this.state.type);
    console.log('newType', this.state.newType);
+  }
+
+  handleTypeAddSubtractSelection (e) {
+    this.metrics();
+    if (e.target.value === "additions" ) {
+      this.setState({
+        additionSelected: true,
+        subtractionSelected: false
+      })
+
+    }
+    else if (e.target.value === "subtractions") {
+      this.setState({
+        additionSelected: false,
+        subtractionSelected: true
+      })
+
+    }
   }
 
 
@@ -372,13 +408,16 @@ class App extends Component {
       newItem: true,
       metrics: false,
       itemsAdded: 0,
-      itemsSubtracted: 0
+      itemsSubtracted: 0,
+      additionSelected: null,
+      subtractionSelected: null
     })
     this.noDupsTypes()
   }
 
   metrics () {
-    console.log(this.state.metrics);
+
+
     for (var i = 0; i < this.state.totals.length; i++) {
       if (this.state.metricsTotals[i] != this.state.totals[i].total) {
         this.state.metricsTotals.push(this.state.totals[i].total)
@@ -393,108 +432,92 @@ class App extends Component {
         else if (this.state.items[i].subtraction === false) {
           this.state.itemsAdded += 1;
         }
-      }
-      this.setState({
-        metrics: false
-      })
+      };
     }
-    var sortedTypes = this.state.types.sort();
-    var types = [], counts = [], prev;
-    var colors = [
-      "#00ffff",
-      "#f0ffff",
-      "#f5f5dc",
-      "#000000",
-      "#0000ff",
-      "#a52a2a",
-      "#00ffff",
-      "#00008b",
-      "#008b8b",
-      "#a9a9a9",
-      "#006400",
-      "#bdb76b",
-      "#8b008b",
-      "#556b2f",
-      "#ff8c00",
-      "#9932cc",
-      "#8b0000",
-      "#e9967a",
-      "#9400d3",
-      "#ff00ff",
-      "#ffd700",
-      "#008000",
-      "#4b0082",
-      "#f0e68c",
-      "#add8e6",
-      "#e0ffff",
-      "#90ee90",
-      "#d3d3d3",
-      "#ffb6c1",
-      "#ffffe0",
-      "#00ff00",
-      "#ff00ff",
-      "#800000",
-      "#000080",
-      "#808000",
-      "#ffa500",
-      "#ffc0cb",
-      "#800080",
-      "#800080",
-      "#ff0000",
-      "#c0c0c0",
-      "#ffffff",
-      "#ffff00"
-    ]
-    for ( var i = 0; i < sortedTypes.length; i++ ) {
-        if ( sortedTypes[i] !== prev ) {
-            types.push(sortedTypes[i]);
-            counts.push(1);
+
+    const types = {
+      subtractionTypes: [],
+      additionTypes: []
+    };
+    
+    for ( var i = 0; i < this.state.items.length; i++ ) {
+      if (this.state.items[i].subtraction === false) {
+        types.additionTypes.push(this.state.items[i].type)
+      }
+      else {
+        types.subtractionTypes.push(this.state.items[i].type)
+      }
+    }
+    var sortedAdditionTypes = types.additionTypes.sort()
+    var sortedSubtractionTypes = types.subtractionTypes.sort()
+
+    var add = [], addCounts = [], prev;
+    var sub = [], subCounts = [], prev;
+
+    for ( var i = 0; i < sortedAdditionTypes.length; i++ ) {
+        if ( sortedAdditionTypes[i] !== prev ) {
+            add.push(sortedAdditionTypes[i]);
+            addCounts.push(1);
         }
         else {
-            counts[counts.length-1]++;
+            addCounts[addCounts.length-1]++;
         }
-        prev = sortedTypes[i];
+        prev = sortedAdditionTypes[i];
+    }
+    for ( var i = 0; i < sortedSubtractionTypes.length; i++ ) {
+        if ( sortedSubtractionTypes[i] !== prev ) {
+            sub.push(sortedSubtractionTypes[i]);
+            subCounts.push(1);
+        }
+        else {
+            subCounts[subCounts.length-1]++;
+        }
+        prev = sortedSubtractionTypes[i];
     }
 
-    this.setState({
-      sortedTypes: types
-    });
-
-    console.log(types, counts);
-
-    console.log("noDups", this.state.noDups);
-    var typesAndCountData =
+    var addTypesAndCountData =
       {
         data: [],
         backgroundColor: [],
 
       }
     ;
-    console.log("typesAndCount", typesAndCountData);
-    for (var i = 0; i < types.length; i++) {
-      typesAndCountData.data.push(
-        counts[i]
+    var subTypesAndCountData =
+      {
+        data: [],
+        backgroundColor: [],
+
+      }
+    ;
+    for (var i = 0; i < add.length; i++) {
+      addTypesAndCountData.data.push(
+        addCounts[i]
       );
-      typesAndCountData.backgroundColor.push(
-        colors[Math.floor(Math.random()*colors.length)]
+      addTypesAndCountData.backgroundColor.push(
+        this.state.colors[i]
       );
     }
-    // var array = Object.assign({}, typesAndCount);
-    // console.log("result", result);
+    for (var i = 0; i < sub.length; i++) {
+      subTypesAndCountData.data.push(
+        subCounts[i]
+      );
+      subTypesAndCountData.backgroundColor.push(
+        this.state.colors[i]
+      );
+    }
 
-    // this.setState({
-    //   typesAndCount: array
-    // });
 
-
-    console.log(this.state);
     this.setState({
-      typesAndCountData: typesAndCountData,
+      addTypesAndCountData: addTypesAndCountData,
+      subTypesAndCountData: subTypesAndCountData,
+      add: add,
+      sub: sub,
       metrics: true,
       newItem: false,
       type: '',
-      newType: ''
+      newType: '',
     })
+
   }
 
   home () {
@@ -504,7 +527,8 @@ class App extends Component {
       type: '',
       newType: '',
       itemsAdded: 0,
-      itemsSubtracted: 0
+      itemsSubtracted: 0,
+
     })
   }
 
@@ -524,10 +548,16 @@ class App extends Component {
 
 
 
+
+
   render() {
-    const typeData = {
-      labels: this.state.sortedTypes,
-      datasets: [this.state.typesAndCountData]
+    const additionsTypeData = {
+      labels: this.state.add,
+      datasets: [this.state.addTypesAndCountData]
+    }
+    const subtractionsTypeData = {
+      labels: this.state.sub,
+      datasets: [this.state.subTypesAndCountData]
     }
     const totalData = {
         labels: this.state.totalDates,
@@ -696,11 +726,20 @@ class App extends Component {
               </div>
               <div class="column">
               <h1> Divison by item type</h1>
-                  <Pie
-                    data={typeData}
-                    width={20}
-                    height={10}
-                  />
+                <select
+                  type="additionSubtraction"
+                  ref="additionSubtraction"
+                  onChange={this.handleTypeAddSubtractSelection.bind(this)}
+
+                >
+                  <option value="subtractions">Subtractions</option>
+                  <option value="additions">Additions</option>
+                </select>
+                <Pie
+                  width={20}
+                  height={10}
+                  data={this.state.additionSelected === true && this.state.subtractionSelected === false ? additionsTypeData : subtractionsTypeData}
+                />
               </div>
             </div>
           </div>
