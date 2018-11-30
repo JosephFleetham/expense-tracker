@@ -24,7 +24,8 @@ class App extends Component {
         itemsAdded: 0,
         itemsSubtracted: 0,
         fields: {},
-        types: [],
+        itemTypes: [],
+        itemDates: [],
         type: '',
         newType: '',
         metricsClicked: false,
@@ -35,7 +36,7 @@ class App extends Component {
               "#800000", 	    	 "#FF6600 	",    	 "#808000", 	    	 "#008000", 	    	" #008080 ",	    	 "#0000FF ",	    	" #666699", 	    	 "#808080 ",
               "#FF0000", 	    	 "#FF9900 ",	    	" #99CC00 ",	    	 "#339966", 	    	" #33CCCC ",	    	" #3366FF", 	    	 "#800080", 	    	" #969696",
               "#FF00FF", 	    	 "#FFCC00", 	    	 "#FFFF00", 	    	 "#00FF00", 	    	" #00FFFF", 	    	 "#00CCFF", 	    	" #993366", 	    	 "#C0C0C0 ",
-              "#FF99CC ",	    	" #FFCC99 ",	    	" #FFFF99", 	    	 "#CCFFCC ",	    	 "#CCFFFF", 	    	" #99CCFF", 	    	 "#CC99FF", 	    	" #FFFFFF"
+              "#FF99CC ",	    	" #FFCC99 ",	    	" #FFFF99", 	    	 "#CCFFCC ",	    	 "#CCFFFF", 	    	" #99CCFF", 	    	 "#CC99FF"
             ]
 
       };
@@ -62,12 +63,14 @@ class App extends Component {
     getItemData().then((items) => {
       this.setState({ items });
       for (var i = 0; i < this.state.items.length; i++) {
-        this.state.types.push(this.state.items[i].type)
+        this.state.itemTypes.push(this.state.items[i].type)
+        this.state.itemDates.push(this.state.items[i].itemDate)
       }
       this.noDupsTypes();
 
       console.log("API items", this.state.items);
-      console.log("types state", this.state.types)
+      console.log("types state", this.state.itemTypes);
+      console.log("types dates", this.state.itemDates);
     });
 
   }
@@ -234,6 +237,39 @@ class App extends Component {
     }
   }
 
+  handleDateFilter (e) {
+    console.log(this.state.totals);
+    console.log(this.state.metricsTotals);
+    var thisWeekTotals = [];
+    var thisWeekDates = [];
+    var date = new Date();
+    var today = [(date.getMonth() + 1) ,date.getDate(), date.getFullYear()];
+
+    for (var i = 0; i < this.state.totals.length; i++) {
+      thisWeekDates.push(this.state.totals[i].totalDate.split("/"));
+    }
+    console.log(thisWeekDates);
+    console.log(today);
+    // if (e.target.value === "thisWeek" ) {
+    //   w
+    //   for (var i = 0; i < 7; i++) {
+    //
+    //     if (this.state.totals[i].totalDate ) {
+    //       this.state.metricsTotals.push(this.state.totals[i].total)
+    //       this.state.totalDates.push(this.state.totals[i].totalDate)
+    //     }
+    //   }
+    //
+    // }
+    // else if (e.target.value === "thisMonth") {
+    //   this.setState({
+    //     additionSelected: false,
+    //     subtractionSelected: true
+    //   })
+    //
+    // }
+  }
+
 
   updateNote (evt) {
     this.setState({
@@ -263,7 +299,7 @@ class App extends Component {
     if (!price || !type || (this.state.subtractionSelected === null && this.state.additionSelected === null)) {
       return this.refs.note.value = 'ERROR', this.refs.price.value = 'ERROR', this.refs.newType.value = 'ERROR';
     }
-    this.state.types.push(type);
+    this.state.itemTypes.push(type);
     this.handleItemAPISubmit({ id: id, type: type, note: note, subtraction: subtraction, price: price, itemDate: itemDate});
     this.setState({
       type: '',
@@ -271,7 +307,7 @@ class App extends Component {
     })
     this.refs.note.value = '';
     this.refs.price.value = '';
-    this.refs.type.value = this.state.types[0];
+    this.refs.type.value = this.state.itemTypes[0];
     this.refs.newType.value = '';
     this.noDupsTypes();
     console.log(this.state.types);
@@ -337,7 +373,8 @@ class App extends Component {
         })
     }
     this.setState({
-      types: []
+      itemTypes: [],
+      itemDates: []
     });
   }
 
@@ -439,7 +476,7 @@ class App extends Component {
       subtractionTypes: [],
       additionTypes: []
     };
-    
+
     for ( var i = 0; i < this.state.items.length; i++ ) {
       if (this.state.items[i].subtraction === false) {
         types.additionTypes.push(this.state.items[i].type)
@@ -517,7 +554,7 @@ class App extends Component {
       type: '',
       newType: '',
     })
-
+    console.log(this.state);
   }
 
   home () {
@@ -534,7 +571,7 @@ class App extends Component {
 
   noDupsTypes () {
     var noDups = [];
-    var arr = this.state.types.filter(function(el) {
+    var arr = this.state.itemTypes.filter(function(el) {
       if (noDups.indexOf(el) == -1) {
         noDups.push(el);
         console.log("noDups", noDups);
@@ -696,6 +733,20 @@ class App extends Component {
             metrics = {this.metrics}
             home = {this.home}
            />
+           <br/>
+           <br/>
+           &nbsp;
+           <select
+             type="dateFilter"
+             ref="dateFilter"
+             onChange={this.handleDateFilter.bind(this)}
+           >
+            <option value="all">All</option>
+            <option value="thisWeek">This Week</option>
+            <option value="thisMonth">This Month</option>
+           </select>
+           <br/>
+           <br/>
           <div class="ui grid">
             <div class="three column row">
               <div class="column">
