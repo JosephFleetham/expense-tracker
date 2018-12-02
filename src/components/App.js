@@ -63,8 +63,10 @@ class App extends Component {
     getItemData().then((items) => {
       this.setState({ items });
       for (var i = 0; i < this.state.items.length; i++) {
-        this.state.itemTypes.push(this.state.items[i].type)
-        this.state.itemDates.push(this.state.items[i].itemDate)
+        if (items.length != this.state.itemTypes.length) {
+          this.state.itemTypes.push(this.state.items[i].type)
+          this.state.itemDates.push(this.state.items[i].itemDate)
+        }
       }
       this.noDupsTypes();
 
@@ -166,12 +168,19 @@ class App extends Component {
   }
 
   toggleAddition () {
+    const additionItems = [];
     if (this.state.additionSelected === false || (this.state.subtractionSelected === null && this.state.additionSelected === null)) {
       this.setState({
         additionSelected: true,
         subtractionSelected: false
       })
     }
+    for (var i = 0; i < this.state.items.length; i++) {
+      if (this.state.items[i].subtraction === false) {
+        additionItems.push(this.state.items[i]);
+      }
+    }
+    console.log(additionItems);
   }
 
   toggleSubtraction () {
@@ -240,34 +249,111 @@ class App extends Component {
   handleDateFilter (e) {
     console.log(this.state.totals);
     console.log(this.state.metricsTotals);
-    var thisWeekTotals = [];
-    var thisWeekDates = [];
-    var date = new Date();
-    var today = [(date.getMonth() + 1) ,date.getDate(), date.getFullYear()];
-
-    for (var i = 0; i < this.state.totals.length; i++) {
-      thisWeekDates.push(this.state.totals[i].totalDate.split("/"));
+    const today = (Date.now());
+    const lastMonth = (new Date().setMonth(new Date().getMonth() - 1));
+    const timeDiffMilli = Math.abs(lastMonth - today);
+    const diffDays = Math.ceil(timeDiffMilli / (1000 * 3600 * 24));
+    console.log("this", diffDays);
+    console.log("last month", lastMonth);
+    console.log("today", today);
+    const totalsDates = [];
+    const itemsDates = [];
+    const thisWeeksDates = [];
+    const thisMonthsDates = [];
+    const thisWeeksTotals = [];
+    const thisWeeksItems = [];
+    const thisMonthsTotals = [];
+    const thisMonthsItems = [];
+    var todayFormatted = (new Date().getMonth() + 1) + '/' + new Date().getDate() + '/' +  new Date().getFullYear()
+    for (var i = 0; i <= 7; i ++) {
+      var day = (new Date(new Date().setDate(new Date().getDate() - i)));
+      thisWeeksDates.push((day.getMonth() + 1) + '/' + day.getDate() + '/' +  day.getFullYear());
     }
-    console.log(thisWeekDates);
-    console.log(today);
-    // if (e.target.value === "thisWeek" ) {
-    //   w
-    //   for (var i = 0; i < 7; i++) {
-    //
-    //     if (this.state.totals[i].totalDate ) {
-    //       this.state.metricsTotals.push(this.state.totals[i].total)
-    //       this.state.totalDates.push(this.state.totals[i].totalDate)
-    //     }
-    //   }
-    //
-    // }
-    // else if (e.target.value === "thisMonth") {
-    //   this.setState({
-    //     additionSelected: false,
-    //     subtractionSelected: true
-    //   })
-    //
-    // }
+    for (var i = 0; i <= diffDays; i ++) {
+      var day = (new Date(new Date().setDate(new Date().getDate() - i)));
+      thisMonthsDates.push((day.getMonth() + 1) + '/' + day.getDate() + '/' +  day.getFullYear());
+    }
+    /// grabbing item + total dates
+    for (var i = 0; i < this.state.totals.length; i++) {
+      totalsDates.push(this.state.totals[i].totalDate);
+    }
+    for (var i = 0; i < this.state.items.length; i++) {
+      itemsDates.push(this.state.items[i].itemDate);
+    }
+    /// Totals Weekly
+    for (var i1 = 0; i1 < this.state.totals.length; i1++) {
+      for (var i2 = 0; i2 < thisWeeksDates.length; i2++) {
+        if (totalsDates[i1] === thisWeeksDates[i2] ) {
+          thisWeeksTotals.push(this.state.totals[i1]);
+          console.log("totals weekly");
+        }
+      }
+    }
+    /// Items Weekly
+    for (var i1 = 0; i1 < this.state.items.length; i1++) {
+      for (var i2 = 0; i2 < thisWeeksDates.length; i2++) {
+        if (itemsDates[i1] === thisWeeksDates[i2] ) {
+          thisWeeksItems.push(this.state.items[i1]);
+          console.log("items weekly");
+        }
+      }
+    }
+
+    /// Totals Monthly
+    for (var i1 = 0; i1 < this.state.totals.length; i1++) {
+      for (var i2 = 0; i2 < thisMonthsDates.length; i2++) {
+        if (totalsDates[i1] === thisMonthsDates[i2] ) {
+          thisMonthsTotals.push(this.state.totals[i1]);
+          console.log("totals monthly");
+        }
+      }
+    }
+    /// Items Monthly
+    for (var i1 = 0; i1 < this.state.items.length; i1++) {
+      for (var i2 = 0; i2 < thisMonthsDates.length; i2++) {
+        if (itemsDates[i1] === thisMonthsDates[i2] ) {
+          thisMonthsItems.push(this.state.items[i1]);
+          console.log("items monthly");
+        }
+      }
+    }
+    this.setState({
+      thisWeekstotals: thisWeeksTotals
+    })
+    console.log("thisweeksitems", thisWeeksItems);
+    console.log("thisweekstotals", thisWeeksTotals);
+    console.log("thismonthssitems", thisMonthsItems);
+    console.log("thismonthsstotals", thisMonthsTotals);
+    console.log("this.state.addTypesAndCountData", this.state.addTypesAndCountData);
+    console.log("this.state.subTypesAndCountData", this.state.subTypesAndCountData);
+    if (e.target.value === "thisWeek" ) {
+      this.setState({
+        sub: thisWeeksItems,
+        add: thisWeeksItems,
+        items: thisWeeksItems,
+        totals: thisWeeksTotals
+      })
+
+    }
+    else if (e.target.value === "thisMonth") {
+      // var monthTypes = [];
+      // for (var i = 0; i< thisMonthsItems.length; i++) {
+      //   monthTypes.push(thisMonthsItems[i].type)
+      // }
+      // console.log("month types", monthTypes);
+      this.setState({
+        sub: thisMonthsItems,
+        add: thisMonthsItems,
+        totals: thisMonthsTotals
+      })
+
+    }
+    else if (e.target.value === "all") {
+      this.getTotals();
+      this.getItems();
+      // this.metrics();
+    }
+
   }
 
 
@@ -565,6 +651,8 @@ class App extends Component {
       newType: '',
       itemsAdded: 0,
       itemsSubtracted: 0,
+      additionSelected: null,
+      subtractionSelected: null
 
     })
   }
