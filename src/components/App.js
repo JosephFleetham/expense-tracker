@@ -5,7 +5,7 @@ import axios from 'axios';
 import { getItemData, deleteData, getTotalData } from '../utils/expense-tracker-api';
 import {Line, Bar, Pie} from 'react-chartjs-2';
 import { Grid, Segment, Divider, Dropdown, Select, Input, Ref } from 'semantic-ui-react';
-import {shuffle, counts } from '../utils/helpers.js';
+import {shuffle, counts, objectsInRange } from '../utils/helpers.js';
 
 
 class App extends Component {
@@ -223,7 +223,6 @@ class App extends Component {
   }
 
   handleTypeAddSubtractSelection (e) {
-    this.metrics();
     if (e.target.value === "additions" ) {
       this.setState({
         additionSelected: true,
@@ -236,7 +235,6 @@ class App extends Component {
         additionSelected: false,
         subtractionSelected: true
       })
-
     }
   }
 
@@ -247,9 +245,6 @@ class App extends Component {
     const lastMonth = (new Date().setMonth(new Date().getMonth() - 1));
     const timeDiffMilli = Math.abs(lastMonth - today);
     const diffDays = Math.ceil(timeDiffMilli / (1000 * 3600 * 24));
-    console.log("this", diffDays);
-    console.log("last month", lastMonth);
-    console.log("today", today);
     const totalsDates = [];
     const itemsDates = [];
     const thisWeeksDates = [];
@@ -275,45 +270,21 @@ class App extends Component {
       itemsDates.push(this.state.items[i].itemDate);
     }
     /// Totals Weekly
-    for (var i1 = 0; i1 < this.state.totals.length; i1++) {
-      for (var i2 = 0; i2 < thisWeeksDates.length; i2++) {
-        if (totalsDates[i1] === thisWeeksDates[i2] ) {
-          thisWeeksTotals.push(this.state.totals[i1]);
-          console.log("totals weekly");
-        }
-      }
-    }
+    thisWeeksTotals.push(objectsInRange(thisWeeksDates, totalsDates, this.state.totals ));
+    console.log("thisWeeksTotals", thisWeeksTotals);
+
     /// Items Weekly
-    for (var i1 = 0; i1 < this.state.items.length; i1++) {
-      for (var i2 = 0; i2 < thisWeeksDates.length; i2++) {
-        if (itemsDates[i1] === thisWeeksDates[i2] ) {
-          thisWeeksItems.push(this.state.items[i1]);
-          console.log("items weekly");
-        }
-      }
-    }
+    thisWeeksItems.push(objectsInRange(thisWeeksDates, itemsDates, this.state.items));
+    console.log("thisWeeksItems", thisWeeksItems);
 
     /// Totals Monthly
-    for (var i1 = 0; i1 < this.state.totals.length; i1++) {
-      for (var i2 = 0; i2 < thisMonthsDates.length; i2++) {
-        if (totalsDates[i1] === thisMonthsDates[i2] ) {
-          thisMonthsTotals.push(this.state.totals[i1]);
-          console.log("totals monthly");
-        }
-      }
-    }
+    thisMonthsTotals.push(objectsInRange(thisMonthsDates, totalsDates, this.state.totals));
+    console.log("thisMonthsTotals", thisMonthsTotals);
+
     /// Items Monthly
-    for (var i1 = 0; i1 < this.state.items.length; i1++) {
-      for (var i2 = 0; i2 < thisMonthsDates.length; i2++) {
-        if (itemsDates[i1] === thisMonthsDates[i2] ) {
-          thisMonthsItems.push(this.state.items[i1]);
-          console.log("items monthly");
-        }
-      }
-    }
-    this.setState({
-      thisWeekstotals: thisWeeksTotals
-    })
+    thisMonthsItems.push(objectsInRange(thisMonthsDates, itemsDates, this.state.items));
+    console.log("thisMonthsTotals", thisMonthsTotals);
+
     console.log("thisweeksitems", thisWeeksItems);
     console.log("thisweekstotals", thisWeeksTotals);
     console.log("thismonthssitems", thisMonthsItems);
@@ -322,32 +293,27 @@ class App extends Component {
     console.log("this.state.subTypesAndCountData", this.state.subTypesAndCountData);
     if (e.target.value === "thisWeek" ) {
       this.setState({
-        sub: thisWeeksItems,
-        add: thisWeeksItems,
-        items: thisWeeksItems,
-        totals: thisWeeksTotals
+        weeklyFilter: true,
+        monthlyFilter: false,
+        thisWeeksItems: thisWeeksItems[0],
+        thisWeeksTotals: thisWeeksTotals[0]
       })
-
+          this.metrics();
     }
     else if (e.target.value === "thisMonth") {
-      // var monthTypes = [];
-      // for (var i = 0; i< thisMonthsItems.length; i++) {
-      //   monthTypes.push(thisMonthsItems[i].type)
-      // }
-      // console.log("month types", monthTypes);
       this.setState({
-        sub: thisMonthsItems,
-        add: thisMonthsItems,
-        totals: thisMonthsTotals
+        weeklyFilter: false,
+        monthlyFilter: true,
+        thisMonthsItems: thisMonthsItems[0],
+        thisMonthsTotals: thisMonthsTotals[0]
       })
-
     }
     else if (e.target.value === "all") {
-      this.getTotals();
-      this.getItems();
-      // this.metrics();
+      this.setState({
+        weeklyFilter: false,
+        monthlyFilter: false
+      })
     }
-
   }
 
 
@@ -534,7 +500,7 @@ class App extends Component {
 
   metrics () {
 
-
+    console.log("metrics state", this.state);
     for (var i = 0; i < this.state.totals.length; i++) {
       if (this.state.metricsTotals[i] != this.state.totals[i].total) {
         this.state.metricsTotals.push(this.state.totals[i].total)
@@ -556,24 +522,45 @@ class App extends Component {
       subtractionTypes: [],
       additionTypes: []
     };
-
-    for ( var i = 0; i < this.state.items.length; i++ ) {
-      if (this.state.items[i].subtraction === false) {
-        types.additionTypes.push(this.state.items[i].type)
-      }
-      else {
-        types.subtractionTypes.push(this.state.items[i].type)
+    if (this.state.weeklyFilter === true && this.state.monthlyFilter === false) {
+      for ( var i = 0; i < this.state.thisWeeksItems.length; i++ ) {
+        if (this.state.thisWeeksItems[i].subtraction === false) {
+          types.additionTypes.push(this.state.thisWeeksItems[i].type)
+        }
+        else {
+          types.subtractionTypes.push(this.state.thisWeeksItems[i].type)
+        }
       }
     }
+    else if (this.state.weeklyFilter === false && this.state.monthlyFilter === true) {
+      for ( var i = 0; i < this.state.thisMonthsItems.length; i++ ) {
+        if (this.state.thisMonthsItems[i].subtraction === false) {
+          types.additionTypes.push(this.state.thisMonthsItems[i].type)
+        }
+        else {
+          types.subtractionTypes.push(this.state.thisMonthsItems[i].type)
+        }
+      }
+    }
+    else {
+      for ( var i = 0; i < this.state.items.length; i++ ) {
+        if (this.state.items[i].subtraction === false) {
+          types.additionTypes.push(this.state.items[i].type)
+        }
+        else {
+          types.subtractionTypes.push(this.state.items[i].type)
+        }
+      }
+    }
+
     var sortedAdditionTypes = types.additionTypes.sort()
     var sortedSubtractionTypes = types.subtractionTypes.sort()
+    console.log("sortedAdditionTypes", sortedAdditionTypes);
 
     var add = counts(sortedAdditionTypes);
     var sub = counts(sortedSubtractionTypes);
-
-    console.log(add);
-    console.log(sub);
-
+    console.log("add", add);
+    console.log("sub", sub);
 
     var addTypesAndCountData =
       {
@@ -604,14 +591,14 @@ class App extends Component {
     this.setState({
       addTypesAndCountData: addTypesAndCountData,
       subTypesAndCountData: subTypesAndCountData,
-      add: add,
-      sub: sub,
+      addLabels: add[0],
+      subLabels: sub[0],
       metrics: true,
       newItem: false,
       type: '',
       newType: '',
     })
-    console.log(this.state);
+    console.log("metrics staate after", this.state);
   }
 
   home () {
@@ -648,11 +635,11 @@ class App extends Component {
 
   render() {
     const additionsTypeData = {
-      labels: this.state.add[0],
+      labels: this.state.addLabels,
       datasets: [this.state.addTypesAndCountData]
     }
     const subtractionsTypeData = {
-      labels: this.state.sub[0],
+      labels: this.state.subLabels,
       datasets: [this.state.subTypesAndCountData]
     }
     const totalData = {
@@ -799,6 +786,7 @@ class App extends Component {
              type="dateFilter"
              ref="dateFilter"
              onChange={this.handleDateFilter.bind(this)}
+             onClick={this.metrics.bind(this)}
            >
             <option value="all">All</option>
             <option value="thisWeek">This Week</option>
@@ -840,6 +828,7 @@ class App extends Component {
                   type="additionSubtraction"
                   ref="additionSubtraction"
                   onChange={this.handleTypeAddSubtractSelection.bind(this)}
+                  onClick={this.metrics.bind(this)}
 
                 >
                   <option value="subtractions">Subtractions</option>

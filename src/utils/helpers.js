@@ -26,3 +26,15 @@ export function counts(types) {
     typesAndCounts.push(counts);
     return typesAndCounts;
 }
+
+export function objectsInRange(rangeDates, objectsdates, objects) {
+  const arr = []
+  for (var i1 = 0; i1 < objects.length; i1++) {
+    for (var i2 = 0; i2 < rangeDates.length; i2++) {
+      if (objectsdates[i1] === rangeDates[i2]) {
+        arr.push(objects[i1]);
+      }
+    }
+  }
+  return arr;
+}
