@@ -5,6 +5,7 @@ import axios from 'axios';
 import { getItemData, deleteData, getTotalData } from '../utils/expense-tracker-api';
 import {Line, Bar, Pie} from 'react-chartjs-2';
 import { Grid, Segment, Divider, Dropdown, Select, Input, Ref } from 'semantic-ui-react';
+import {shuffle, counts } from '../utils/helpers.js';
 
 
 class App extends Component {
@@ -93,13 +94,6 @@ class App extends Component {
 
   componentWillMount () {
 
-  function shuffle(a) {
-      for (let i = a.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [a[i], a[j]] = [a[j], a[i]];
-      }
-      return a;
-  }
   shuffle(this.state.colors)
   this.getItems();
   this.getTotals();
@@ -574,56 +568,33 @@ class App extends Component {
     var sortedAdditionTypes = types.additionTypes.sort()
     var sortedSubtractionTypes = types.subtractionTypes.sort()
 
-    var add = [], addCounts = [], prev;
-    var sub = [], subCounts = [], prev;
+    var add = counts(sortedAdditionTypes);
+    var sub = counts(sortedSubtractionTypes);
 
-    for ( var i = 0; i < sortedAdditionTypes.length; i++ ) {
-        if ( sortedAdditionTypes[i] !== prev ) {
-            add.push(sortedAdditionTypes[i]);
-            addCounts.push(1);
-        }
-        else {
-            addCounts[addCounts.length-1]++;
-        }
-        prev = sortedAdditionTypes[i];
-    }
-    for ( var i = 0; i < sortedSubtractionTypes.length; i++ ) {
-        if ( sortedSubtractionTypes[i] !== prev ) {
-            sub.push(sortedSubtractionTypes[i]);
-            subCounts.push(1);
-        }
-        else {
-            subCounts[subCounts.length-1]++;
-        }
-        prev = sortedSubtractionTypes[i];
-    }
+    console.log(add);
+    console.log(sub);
+
 
     var addTypesAndCountData =
       {
-        data: [],
+        data: add[1],
         backgroundColor: [],
 
       }
     ;
     var subTypesAndCountData =
       {
-        data: [],
+        data: sub[1],
         backgroundColor: [],
 
       }
     ;
-    for (var i = 0; i < add.length; i++) {
-      addTypesAndCountData.data.push(
-        addCounts[i]
-      );
+    for (var i = 0; i < add[0].length; i++) {
       addTypesAndCountData.backgroundColor.push(
         this.state.colors[i]
       );
     }
-    for (var i = 0; i < sub.length; i++) {
-      subTypesAndCountData.data.push(
-        subCounts[i]
-      );
+    for (var i = 0; i < sub[0].length; i++) {
       subTypesAndCountData.backgroundColor.push(
         this.state.colors[i]
       );
@@ -677,11 +648,11 @@ class App extends Component {
 
   render() {
     const additionsTypeData = {
-      labels: this.state.add,
+      labels: this.state.add[0],
       datasets: [this.state.addTypesAndCountData]
     }
     const subtractionsTypeData = {
-      labels: this.state.sub,
+      labels: this.state.sub[0],
       datasets: [this.state.subTypesAndCountData]
     }
     const totalData = {
