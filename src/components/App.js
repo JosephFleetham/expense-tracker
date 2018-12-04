@@ -494,7 +494,9 @@ class App extends Component {
       itemsAdded: 0,
       itemsSubtracted: 0,
       additionSelected: null,
-      subtractionSelected: null
+      subtractionSelected: null,
+      weeklyFilter: false,
+      monthlyFilter: false
     })
     this.noDupsTypes()
   }
@@ -639,7 +641,9 @@ class App extends Component {
       itemsAdded: 0,
       itemsSubtracted: 0,
       additionSelected: null,
-      subtractionSelected: null
+      subtractionSelected: null,
+      weeklyFilter: false,
+      monthlyFilter: false
 
     })
   }
