@@ -25,7 +25,9 @@ class App extends Component {
         itemsAdded: 0,
         itemsSubtracted: 0,
         fields: {},
-        itemTypes: [],
+        allItemTypes: [],
+        subItemTypes: [],
+        addItemTypes: [],
         itemDates: [],
         type: '',
         newType: '',
@@ -64,11 +66,18 @@ class App extends Component {
     getItemData().then((items) => {
       this.setState({ items });
       for (var i = 0; i < this.state.items.length; i++) {
-        if (items.length != this.state.itemTypes.length) {
-          this.state.itemTypes.push(this.state.items[i].type)
+        if (items.length != this.state.allItemTypes.length) {
+          this.state.allItemTypes.push(this.state.items[i].type)
           this.state.itemDates.push(this.state.items[i].itemDate)
         }
+        if (this.state.items[i].subtraction === true) {
+          this.state.subItemTypes.push(this.state.items[i].type)
+        }
+        else if (this.state.items[i].subtraction == false) {
+          this.state.addItemTypes.push(this.state.items[i].type)
+        }
       }
+
       this.noDupsTypes();
 
       console.log("API items", this.state.items);
@@ -164,25 +173,23 @@ class App extends Component {
   toggleAddition () {
     const additionItems = [];
     if (this.state.additionSelected === false || (this.state.subtractionSelected === null && this.state.additionSelected === null)) {
-      this.setState({
-        additionSelected: true,
-        subtractionSelected: false
-      })
+      this.setState({additionSelected: true, subtractionSelected: false}, () => {
+        this.noDupsTypes();
+      });
     }
     for (var i = 0; i < this.state.items.length; i++) {
       if (this.state.items[i].subtraction === false) {
         additionItems.push(this.state.items[i]);
       }
     }
-    console.log(additionItems);
+
   }
 
   toggleSubtraction () {
     if (this.state.subtractionSelected === false || (this.state.subtractionSelected === null && this.state.additionSelected === null)) {
-      this.setState({
-        subtractionSelected: true,
-        additionSelected: false
-      })
+      this.setState({additionSelected: false, subtractionSelected: true}, () => {
+        this.noDupsTypes();
+      });
     }
   }
 
@@ -228,7 +235,6 @@ class App extends Component {
         additionSelected: true,
         subtractionSelected: false
       })
-
     }
     else if (e.target.value === "subtractions") {
       this.setState({
@@ -299,7 +305,6 @@ class App extends Component {
         thisWeeksItems: thisWeeksItems[0],
         thisWeeksTotals: thisWeeksTotals[0]
       })
-          this.metrics();
     }
     else if (e.target.value === "thisMonth") {
       this.setState({
@@ -498,7 +503,7 @@ class App extends Component {
       weeklyFilter: false,
       monthlyFilter: false
     })
-    this.noDupsTypes()
+    this.noDupsTypes();
   }
 
   metrics () {
@@ -649,13 +654,32 @@ class App extends Component {
   }
 
   noDupsTypes () {
-    var noDups = [];
-    var arr = this.state.itemTypes.filter(function(el) {
-      if (noDups.indexOf(el) == -1) {
-        noDups.push(el);
-        console.log("noDups", noDups);
-      }
-    });
+    let noDups = [];
+    if (this.state.additionSelected === null && this.state.subtractionSelected === null) {
+      console.log(this.state.items);
+      var arr = this.state.allItemTypes.filter(function(el) {
+        if (noDups.indexOf(el) == -1) {
+          noDups.push(el);
+          console.log("noDups", noDups);
+        }
+      });
+    }
+    if (this.state.additionSelected === true && this.state.subtractionSelected === false) {
+      var arr = this.state.addItemTypes.filter(function(el) {
+        if (noDups.indexOf(el) == -1) {
+          noDups.push(el);
+          console.log("noDups", noDups);
+        }
+      });
+    }
+    if (this.state.additionSelected === false && this.state.subtractionSelected === true) {
+      var arr = this.state.subItemTypes.filter(function(el) {
+        if (noDups.indexOf(el) == -1) {
+          noDups.push(el);
+          console.log("noDups", noDups);
+        }
+      });
+    }
     noDups.splice(0, 0, "Select Type");
     this.setState({
       noDups: noDups
@@ -872,6 +896,22 @@ class App extends Component {
                   height={10}
                   data={this.state.additionSelected === true && this.state.subtractionSelected === false ? additionsTypeData : subtractionsTypeData}
                 />
+              </div>
+              <div class="column">
+                <h1> Amount Spent Per Item </h1>
+                    <Bar
+                      width={20}
+                      height={10}
+                      options={{
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        }
+                      }}
+                    />
               </div>
             </div>
           </div>
