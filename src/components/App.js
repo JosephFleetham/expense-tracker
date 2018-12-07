@@ -175,11 +175,14 @@ class App extends Component {
     if (this.state.additionSelected === false || (this.state.subtractionSelected === null && this.state.additionSelected === null)) {
       this.setState({additionSelected: true, subtractionSelected: false}, () => {
         this.noDupsTypes();
+        console.log("addition", this.state.additionSelected);
+        console.log("subtraction", this.state.subtractionSelected);
       });
     }
     for (var i = 0; i < this.state.items.length; i++) {
       if (this.state.items[i].subtraction === false) {
         additionItems.push(this.state.items[i]);
+
       }
     }
 
@@ -189,6 +192,8 @@ class App extends Component {
     if (this.state.subtractionSelected === false || (this.state.subtractionSelected === null && this.state.additionSelected === null)) {
       this.setState({additionSelected: false, subtractionSelected: true}, () => {
         this.noDupsTypes();
+        console.log("subtraction", this.state.subtractionSelected);
+        console.log("addition", this.state.additionSelected);
       });
     }
   }
@@ -507,8 +512,6 @@ class App extends Component {
   }
 
   metrics () {
-
-    console.log("metrics state", this.state);
     if (this.state.items.length != 0 && (this.state.itemsSubtracted === 0 || this.state.itemsAdded === 0)) {
       for (var i = 0; i < this.state.items.length; i++) {
         if (this.state.items[i].subtraction === true) {
@@ -518,6 +521,10 @@ class App extends Component {
           this.state.itemsAdded += 1;
         }
       };
+      this.setState({
+        additionSelected: false,
+        subtractionSelected: true
+      });
     }
 
     const types = {
@@ -684,6 +691,7 @@ class App extends Component {
     this.setState({
       noDups: noDups
     });
+
   }
 
 
