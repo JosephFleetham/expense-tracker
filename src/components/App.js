@@ -612,21 +612,17 @@ class App extends Component {
       }
     }
     subtractionItems.sort();
-    console.log("woopwoopw", subtractionItems);
     var noDupsSubItemsPrices = [];
 
     noDupsSubItemsPrices.push(subtractionItems[0]);
     for (var x = 1; x < subtractionItems.length; x++) {
       if (subtractionItems[x][0] === noDupsSubItemsPrices[0][0]) {
         noDupsSubItemsPrices[0].splice(1, 1, subtractionItems[x][1] + noDupsSubItemsPrices[0][1])
-        console.log('wowow');
       }
       else {
         noDupsSubItemsPrices.splice(0, 0, subtractionItems[x])
       }
     }
-
-    /// need to figure this out tomorrow
 
 
 
