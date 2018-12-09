@@ -356,7 +356,13 @@ class App extends Component {
     if (!price || !type || (this.state.subtractionSelected === null && this.state.additionSelected === null)) {
       return this.refs.note.value = 'ERROR', this.refs.price.value = 'ERROR', this.refs.newType.value = 'ERROR';
     }
-    this.state.itemTypes.push(type);
+    if (this.state.additionSelected === true && this.state.subtractionSelected === false) {
+      this.state.addItemTypes.push(type);
+    }
+    else if (this.state.additionSelected === false && this.state.subtractionSelected === true) {
+      this.state.subItemTypes.push(type);
+    }
+
     this.handleItemAPISubmit({ id: id, type: type, note: note, subtraction: subtraction, price: price, itemDate: itemDate});
     this.setState({
       type: '',
@@ -527,6 +533,8 @@ class App extends Component {
       });
     }
 
+    const subtractionItems = [];
+
     const types = {
       subtractionTypes: [],
       additionTypes: []
@@ -546,6 +554,7 @@ class App extends Component {
         }
         else {
           types.subtractionTypes.push(this.state.thisWeeksItems[i].type)
+          subtractionItems.push(this.state.thisWeeksItems[i])
         }
       }
       // Weekly Totals
@@ -565,6 +574,7 @@ class App extends Component {
         }
         else {
           types.subtractionTypes.push(this.state.thisMonthsItems[i].type)
+          subtractionItems.push(this.state.thisMonthsItems[i])
         }
       }
       // Monthly Totals
@@ -584,6 +594,7 @@ class App extends Component {
         }
         else {
           types.subtractionTypes.push(this.state.items[i].type)
+          subtractionItems.push(this.state.items[i])
         }
       }
       // All Totals
@@ -594,10 +605,10 @@ class App extends Component {
         }
       }
     }
-
+    var sortedSubtractionItems = subtractionItems.sort();
     var sortedAdditionTypes = types.additionTypes.sort()
     var sortedSubtractionTypes = types.subtractionTypes.sort()
-    console.log("sortedAdditionTypes", sortedAdditionTypes);
+    console.log("sortedsubtractionitems", sortedSubtractionItems);
 
     var add = counts(sortedAdditionTypes);
     var sub = counts(sortedSubtractionTypes);
@@ -664,12 +675,7 @@ class App extends Component {
     let noDups = [];
     if (this.state.additionSelected === null && this.state.subtractionSelected === null) {
       console.log(this.state.items);
-      var arr = this.state.allItemTypes.filter(function(el) {
-        if (noDups.indexOf(el) == -1) {
-          noDups.push(el);
-          console.log("noDups", noDups);
-        }
-      });
+      noDups.push("Select Add/Sub");
     }
     if (this.state.additionSelected === true && this.state.subtractionSelected === false) {
       var arr = this.state.addItemTypes.filter(function(el) {
@@ -678,6 +684,7 @@ class App extends Component {
           console.log("noDups", noDups);
         }
       });
+      noDups.splice(0, 0, "Select Type");
     }
     if (this.state.additionSelected === false && this.state.subtractionSelected === true) {
       var arr = this.state.subItemTypes.filter(function(el) {
@@ -686,8 +693,8 @@ class App extends Component {
           console.log("noDups", noDups);
         }
       });
+      noDups.splice(0, 0, "Select Type");  
     }
-    noDups.splice(0, 0, "Select Type");
     this.setState({
       noDups: noDups
     });
