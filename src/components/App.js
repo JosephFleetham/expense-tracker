@@ -554,7 +554,9 @@ class App extends Component {
         }
         else {
           types.subtractionTypes.push(this.state.thisWeeksItems[i].type)
-          subtractionItems.push(this.state.thisWeeksItems[i])
+          subtractionItems.push(
+            [this.state.thisWeeksItems[i].type, this.state.thisWeeksItems[i].price]
+          )
         }
       }
       // Weekly Totals
@@ -574,7 +576,9 @@ class App extends Component {
         }
         else {
           types.subtractionTypes.push(this.state.thisMonthsItems[i].type)
-          subtractionItems.push(this.state.thisMonthsItems[i])
+          subtractionItems.push(
+            [this.state.thisMonthsItems[i].type, this.state.thisMonthsItems[i].price]
+          )
         }
       }
       // Monthly Totals
@@ -594,7 +598,9 @@ class App extends Component {
         }
         else {
           types.subtractionTypes.push(this.state.items[i].type)
-          subtractionItems.push(this.state.items[i])
+          subtractionItems.push(
+            [this.state.items[i].type, this.state.items[i].price]
+          )
         }
       }
       // All Totals
@@ -605,10 +611,31 @@ class App extends Component {
         }
       }
     }
-    var sortedSubtractionItems = subtractionItems.sort();
+    subtractionItems.sort();
+    console.log("woopwoopw", subtractionItems);
+    var noDupsSubItemsPrices = [];
+
+    noDupsSubItemsPrices.push(subtractionItems[0]);
+    for (var x = 1; x < subtractionItems.length; x++) {
+      if (subtractionItems[x][0] === noDupsSubItemsPrices[0][0]) {
+        noDupsSubItemsPrices[0].splice(1, 1, subtractionItems[x][1] + noDupsSubItemsPrices[0][1])
+        console.log('wowow');
+      }
+      else {
+        noDupsSubItemsPrices.splice(0, 0, subtractionItems[x])
+      }
+    }
+
+    /// need to figure this out tomorrow
+
+
+
+
+    console.log("noDupsSub", noDupsSubItemsPrices);
+    console.log(this.state.items);
     var sortedAdditionTypes = types.additionTypes.sort()
     var sortedSubtractionTypes = types.subtractionTypes.sort()
-    console.log("sortedsubtractionitems", sortedSubtractionItems);
+
 
     var add = counts(sortedAdditionTypes);
     var sub = counts(sortedSubtractionTypes);
@@ -693,7 +720,7 @@ class App extends Component {
           console.log("noDups", noDups);
         }
       });
-      noDups.splice(0, 0, "Select Type");  
+      noDups.splice(0, 0, "Select Type");
     }
     this.setState({
       noDups: noDups
