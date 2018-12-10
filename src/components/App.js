@@ -611,28 +611,12 @@ class App extends Component {
         }
       }
     }
-    subtractionItems.sort();
-    var noDupsSubItemsPrices = [];
-
-    noDupsSubItemsPrices.push(subtractionItems[0]);
-    for (var x = 1; x < subtractionItems.length; x++) {
-      if (subtractionItems[x][0] === noDupsSubItemsPrices[0][0]) {
-        noDupsSubItemsPrices[0].splice(1, 1, subtractionItems[x][1] + noDupsSubItemsPrices[0][1])
-      }
-      else {
-        noDupsSubItemsPrices.splice(0, 0, subtractionItems[x])
-      }
-    }
 
 
-
-
-    console.log("noDupsSub", noDupsSubItemsPrices);
-    console.log(this.state.items);
     var sortedAdditionTypes = types.additionTypes.sort()
     var sortedSubtractionTypes = types.subtractionTypes.sort()
 
-
+    console.log(types.subtractionTypes);
     var add = counts(sortedAdditionTypes);
     var sub = counts(sortedSubtractionTypes);
     console.log("add", add);
@@ -663,8 +647,44 @@ class App extends Component {
       );
     }
 
+    subtractionItems.sort();
+    console.log("subitems", subtractionItems);
+    var noDupsSubItemsPrices = {
+      types: [],
+      prices: []
+    };
+
+    noDupsSubItemsPrices.types.push(subtractionItems[0][0]);
+    noDupsSubItemsPrices.prices.push(subtractionItems[0][1]);
+    for (var x = 1; x < subtractionItems.length; x++) {
+      if (subtractionItems[x][0] === noDupsSubItemsPrices.types[0]) {
+        noDupsSubItemsPrices.prices.splice(0, 1, subtractionItems[x][1] + noDupsSubItemsPrices.prices[0])
+      }
+      else {
+        noDupsSubItemsPrices.types.splice(0, 0, subtractionItems[x][0])
+        noDupsSubItemsPrices.prices.splice(0, 0, subtractionItems[x][1])
+      }
+    }
+    noDupsSubItemsPrices.types.reverse();
+    noDupsSubItemsPrices.prices.reverse();
+    var amountPerItemData = []
+
+
+    for (var i = 0; i < noDupsSubItemsPrices.types.length; i++) {
+      amountPerItemData.push(
+        {
+         label: noDupsSubItemsPrices.types[i],
+         data: [noDupsSubItemsPrices.prices[i]],
+         backgroundColor: this.state.colors[i]
+       }
+      )
+    };
+
+    console.log("this", amountPerItemData);
+    console.log("this this", subTypesAndCountData);
 
     this.setState({
+      amountPerItemData: amountPerItemData,
       metricsTotals: metricsTotals,
       addTypesAndCountData: addTypesAndCountData,
       subTypesAndCountData: subTypesAndCountData,
@@ -729,6 +749,9 @@ class App extends Component {
 
 
   render() {
+    const amountPerItemData = {
+      datasets: this.state.amountPerItemData
+    }
     const additionsTypeData = {
       labels: this.state.addLabels,
       datasets: [this.state.addTypesAndCountData]
@@ -936,10 +959,13 @@ class App extends Component {
                 />
               </div>
               <div class="column">
+              {console.log(amountPerItemData)}
+              {console.log(addSubtractData)}
                 <h1> Amount Spent Per Item </h1>
                     <Bar
-                      width={20}
-                      height={10}
+                    data={amountPerItemData}
+                      width={80}
+                      height={50}
                       options={{
                         scales: {
                             yAxes: [{
