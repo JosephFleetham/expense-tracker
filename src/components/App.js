@@ -675,7 +675,8 @@ class App extends Component {
         {
          label: noDupsSubItemsPrices.types[i],
          data: [noDupsSubItemsPrices.prices[i]],
-         backgroundColor: this.state.colors[i]
+         backgroundColor: this.state.colors[i],
+         hoverBackgroundColor: this.state.colors[i]
        }
       )
     };
@@ -966,6 +967,7 @@ class App extends Component {
                     data={amountPerItemData}
                       width={80}
                       height={50}
+                      animation={false}
                       options={{
                         scales: {
                             yAxes: [{
